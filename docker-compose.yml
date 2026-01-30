@@ -1,0 +1,67 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: bluewings-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - TZ=Asia/Seoul
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_URL=${DB_URL}
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/q/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - BACKEND_URL=http://backend:8080
+    container_name: bluewings-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - TZ=Asia/Seoul
+      - BACKEND_URL=http://backend:8080
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+      args:
+        - BACKEND_URL=http://backend:8080
+    container_name: bluewings-admin
+    ports:
+      - "3001:3001"
+    environment:
+      - TZ=Asia/Seoul
+      - BACKEND_URL=http://backend:8080
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: bluewings-cloudflared
+    command: tunnel --no-autoupdate --protocol http2 run
+    environment:
+      - TZ=Asia/Seoul
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - backend
+      - frontend
+      - admin
+    restart: unless-stopped

@@ -1,0 +1,149 @@
+@import "tailwindcss";
+
+/* 블루윙즈 커스텀 테마 */
+@theme {
+  --color-bluewings-light: #64B5F6;
+  --color-bluewings: #1976D2;
+  --color-bluewings-dark: #0D47A1;
+  --color-bluewings-gold: #FFD700;
+
+  --font-family-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  --shadow-toss: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-toss-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* 기본 스타일 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border-color: #e5e7eb; /* gray-200 - 기본 테두리 색상 */
+}
+
+body {
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f6f8;
+  color: #191f28;
+  margin: 0;
+  padding: 0;
+}
+
+/* Toss 스타일 컴포넌트 */
+.toss-card {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-toss);
+}
+
+.toss-input {
+  width: 100%;
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  background-color: #f9fafb;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+/* 아이콘 있는 입력필드용 */
+.toss-input.pl-12 {
+  padding-left: 3rem;
+}
+
+.toss-input.pr-12 {
+  padding-right: 3rem;
+}
+
+.toss-input::placeholder {
+  color: #9ca3af;
+}
+
+.toss-input:focus {
+  background-color: white;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.3);
+}
+
+.toss-button {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toss-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toss-button-primary {
+  background-color: var(--color-bluewings);
+  color: white;
+}
+
+.toss-button-primary:hover:not(:disabled) {
+  background-color: var(--color-bluewings-dark);
+}
+
+.toss-button-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.toss-button-secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.toss-button-secondary:hover:not(:disabled) {
+  background-color: #e5e7eb;
+}
+
+.toss-button-secondary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* 등급 배지 */
+.grade-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.grade-rookie {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.grade-supporter {
+  background-color: #e0f2fe;
+  color: #0284c7;
+}
+
+.grade-fanatic {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.grade-ultras {
+  background-color: #e0e7ff;
+  color: #4338ca;
+}
+
+.grade-legend {
+  background-color: #fef3c7;
+  color: #d97706;
+}
