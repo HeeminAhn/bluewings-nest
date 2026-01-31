@@ -108,7 +108,7 @@ export default function PostListClient({
     if (newCategoryId) params.set('categoryId', newCategoryId.toString());
     if (keyword) params.set('keyword', keyword);
     params.set('page', '0');
-    router.push(`/posts?${params.toString()}`);
+    router.replace(`/posts?${params.toString()}`);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -117,7 +117,7 @@ export default function PostListClient({
     if (authorId) params.set('authorId', authorId.toString());
     if (keyword) params.set('keyword', keyword);
     if (categoryId) params.set('categoryId', categoryId.toString());
-    router.push(`/posts?${params.toString()}`);
+    router.replace(`/posts?${params.toString()}`);
   };
 
   const handleClearSearch = () => {
