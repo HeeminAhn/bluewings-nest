@@ -191,7 +191,7 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center overflow-hidden">
                 <Image
-                  src="/favicon-48x48.png"
+                  src="/android-chrome-512x512.png"
                   alt="블루윙즈 둥지"
                   width={40}
                   height={40}
