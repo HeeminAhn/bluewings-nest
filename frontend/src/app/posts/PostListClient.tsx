@@ -242,7 +242,7 @@ export default function PostListClient({
             <Loader2 className="w-8 h-8 animate-spin text-blue-700" />
           </div>
         ) : posts.length === 0 ? (
-          <Card className="shadow-sm border-0 max-w-md">
+          <Card className="shadow-sm border-0">
             <CardContent className="py-12 text-center text-slate-500">
               {keyword ? '검색 결과가 없습니다.' : '아직 게시글이 없습니다.'}
             </CardContent>
