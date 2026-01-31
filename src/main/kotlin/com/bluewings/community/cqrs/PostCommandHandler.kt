@@ -103,11 +103,10 @@ class PostCommandHandler(
         post.update(command.title, command.content)
         post.category = category
 
-        // 기존 이미지 삭제 (파일 시스템 + DB)
+        // 기존 이미지 삭제 (파일 시스템 + orphanRemoval로 DB 자동 삭제)
         post.images.forEach { image ->
             fileUploadService.deleteFile(image.filePath)
         }
-        postImageRepository.deleteByPostId(command.postId)
         post.images.clear()
 
         // 새 이미지 저장
