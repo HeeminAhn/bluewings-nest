@@ -2,9 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
-import { Button, Toast } from '@/components/common';
+import { ChevronDown, Loader2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Header } from '@/components/layout';
 import ImageUpload from '@/components/ImageUpload';
+import { Toast } from '@/components/common';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import type { UploadImageResponse, Category } from '@/lib/types';
@@ -14,7 +27,7 @@ export default function PostWritePage() {
   const { isAuthenticated, _hasHydrated } = useAuthStore();
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
+  const [categoryId, setCategoryId] = useState<string>('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [images, setImages] = useState<UploadImageResponse[]>([]);
@@ -67,7 +80,7 @@ export default function PostWritePage() {
       contentType: img.contentType,
     }));
 
-    const response = await api.createPost({ title, content, categoryId, images: imageRequests });
+    const response = await api.createPost({ title, content, categoryId: parseInt(categoryId), images: imageRequests });
 
     if (response.success && response.data) {
       setToast({ message: '게시글이 작성되었습니다.', type: 'success' });
@@ -80,71 +93,81 @@ export default function PostWritePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white sticky top-0 z-40 border-b">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => router.back()} className="p-2 -ml-2 hover:bg-gray-100 rounded-lg">
-              <ArrowLeft className="w-6 h-6" />
-            </button>
-            <h1 className="text-lg font-semibold">새 게시글</h1>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
+      <Header title="새 게시글" showBack />
 
       <main className="max-w-2xl mx-auto p-4">
         <form onSubmit={handleSubmit} className="space-y-4">
-          {categories.length > 0 && (
-            <div className="relative">
-              <select
-                value={categoryId || ''}
-                onChange={(e) => setCategoryId(e.target.value ? parseInt(e.target.value) : undefined)}
-                className="w-full px-4 py-3 bg-white rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-bluewings/30"
-              >
-                <option value="">카테고리를 선택해주세요</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-            </div>
-          )}
+          <Card className="shadow-sm border-0">
+            <CardContent className="p-4 space-y-4">
+              {categories.length > 0 && (
+                <div className="space-y-2">
+                  <Label>카테고리</Label>
+                  <Select value={categoryId} onValueChange={setCategoryId}>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="카테고리를 선택해주세요" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id.toString()}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
-          <div>
-            <input
-              type="text"
-              placeholder="제목을 입력하세요"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={200}
-              className="w-full px-4 py-3 bg-white rounded-xl text-lg font-medium focus:outline-none focus:ring-2 focus:ring-bluewings/30"
-            />
-            <p className="text-right text-sm text-gray-400 mt-1">{title.length}/200</p>
-          </div>
+              <div className="space-y-2">
+                <Label>제목</Label>
+                <Input
+                  type="text"
+                  placeholder="제목을 입력하세요"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  maxLength={200}
+                  className="bg-white"
+                />
+                <p className="text-right text-xs text-slate-400">{title.length}/200</p>
+              </div>
 
-          <div>
-            <textarea
-              placeholder="내용을 입력하세요"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={12}
-              className="w-full px-4 py-3 bg-white rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-bluewings/30"
-            />
-          </div>
+              <div className="space-y-2">
+                <Label>내용</Label>
+                <Textarea
+                  placeholder="내용을 입력하세요"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  rows={12}
+                  className="bg-white resize-none"
+                />
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white rounded-xl p-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">이미지 첨부</h3>
-            <ImageUpload
-              images={images}
-              onImagesChange={setImages}
-              maxImages={5}
-            />
-          </div>
+          <Card className="shadow-sm border-0">
+            <CardContent className="p-4">
+              <Label className="mb-3 block">이미지 첨부</Label>
+              <ImageUpload
+                images={images}
+                onImagesChange={setImages}
+                maxImages={5}
+              />
+            </CardContent>
+          </Card>
 
-          <Button type="submit" isLoading={isLoading} disabled={!title.trim() || !content.trim() || !categoryId}>
-            작성하기
+          <Button
+            type="submit"
+            className="w-full bg-blue-700 hover:bg-blue-800"
+            disabled={isLoading || !title.trim() || !content.trim() || !categoryId}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                작성 중...
+              </>
+            ) : (
+              '작성하기'
+            )}
           </Button>
         </form>
       </main>

@@ -2,6 +2,7 @@ package com.bluewings.common.exception
 
 import com.bluewings.common.response.ApiResponse
 import jakarta.validation.ConstraintViolationException
+import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.core.Response
 import jakarta.ws.rs.ext.ExceptionMapper
 import jakarta.ws.rs.ext.Provider
@@ -29,6 +30,14 @@ class ConstraintViolationExceptionHandler : ExceptionMapper<ConstraintViolationE
         return Response.status(Response.Status.BAD_REQUEST)
             .entity(ApiResponse.error<Unit>(ErrorCode.INVALID_INPUT, messages))
             .build()
+    }
+}
+
+@Provider
+class WebApplicationExceptionHandler : ExceptionMapper<WebApplicationException> {
+    override fun toResponse(exception: WebApplicationException): Response {
+        // JAX-RS 표준 예외는 원래 응답을 그대로 반환 (swagger-ui, 404 등)
+        return exception.response
     }
 }
 

@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ArrowLeft,
   Heart,
   MessageCircle,
   Eye,
@@ -16,7 +15,22 @@ import {
   Camera,
   Loader2,
   Flag,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Header } from '@/components/layout';
 import { GradeBadge } from '@/components/member/GradeBadge';
 import { CommentItem } from '@/components/community';
 import { Toast, ReportModal } from '@/components/common';
@@ -38,7 +52,6 @@ export default function PostDetailClient({ initialPost, postId }: PostDetailClie
   const [newComment, setNewComment] = useState('');
   const [commentImages, setCommentImages] = useState<UploadImageResponse[]>([]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
@@ -47,12 +60,10 @@ export default function PostDetailClient({ initialPost, postId }: PostDetailClie
   const isAuthor = _hasHydrated && member?.id === post.author.id;
   const showAuthUI = _hasHydrated && isAuthenticated;
 
-  // 댓글은 클라이언트에서 fetch (인증 상태에 따라 다를 수 있음)
   useEffect(() => {
     fetchComments();
   }, [postId]);
 
-  // 인증 사용자의 경우 좋아요 상태 갱신
   useEffect(() => {
     if (_hasHydrated && isAuthenticated) {
       refreshPost();
@@ -60,7 +71,6 @@ export default function PostDetailClient({ initialPost, postId }: PostDetailClie
   }, [_hasHydrated, isAuthenticated]);
 
   const refreshPost = async () => {
-    // skipViewCount=true로 호출하여 조회수 중복 증가 방지
     const response = await api.getPost(postId, true);
     if (response.success && response.data) {
       setPost(response.data);
@@ -231,158 +241,164 @@ export default function PostDetailClient({ initialPost, postId }: PostDetailClie
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white sticky top-0 z-40 border-b">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <button onClick={() => router.push('/posts')} className="p-2 -ml-2 hover:bg-gray-100 rounded-lg">
-            <ArrowLeft className="w-6 h-6" />
-          </button>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24">
+      <Header
+        title=""
+        showBack
+        onBack={() => router.push('/posts')}
+        rightAction={
           <div className="flex items-center gap-1">
             {showAuthUI && !isAuthor && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setShowReportModal(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-red-500"
-                title="신고하기"
+                className="text-slate-500 hover:text-red-500"
               >
                 <Flag className="w-5 h-5" />
-              </button>
+              </Button>
             )}
             {isAuthor && (
-              <div className="relative">
-                <button onClick={() => setShowMenu(!showMenu)} className="p-2 hover:bg-gray-100 rounded-lg">
-                  <MoreVertical className="w-6 h-6" />
-                </button>
-                {showMenu && (
-                  <div className="absolute right-0 top-12 bg-white rounded-lg shadow-lg border py-1 z-10 min-w-[100px]">
-                    <Link
-                      href={`/posts/${postId}/edit`}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 whitespace-nowrap"
-                    >
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreVertical className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link href={`/posts/${postId}/edit`} className="flex items-center gap-2">
                       <Edit2 className="w-4 h-4" />
                       수정
                     </Link>
-                    <button
-                      onClick={handleDelete}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-gray-50 w-full whitespace-nowrap"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      삭제
-                    </button>
-                  </div>
-                )}
-              </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleDelete} className="text-red-500">
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    삭제
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
-        </div>
-      </header>
+        }
+      />
 
-      <main className="max-w-2xl mx-auto pb-24">
-        <article className="bg-white p-4">
-          {post.category && (
-            <span className="inline-block px-2 py-0.5 text-xs font-medium text-bluewings bg-bluewings/10 rounded-full mb-2">
-              {post.category.name}
-            </span>
-          )}
-          <h1 className="text-xl font-bold text-gray-900 mb-4">{post.title}</h1>
+      <main className="max-w-2xl mx-auto">
+        <Card className="shadow-sm border-0 rounded-none">
+          <CardContent className="p-4">
+            {post.category && (
+              <Badge
+                variant="secondary"
+                className="mb-3"
+                style={{ backgroundColor: `${post.category.color}20`, color: post.category.color }}
+              >
+                {post.category.name}
+              </Badge>
+            )}
+            <h1 className="text-xl font-bold text-slate-900 mb-4">{post.title}</h1>
 
-          <div className="flex items-center justify-between mb-4 pb-4 border-b">
-            <div className="flex items-center gap-2">
-              {post.author.profileImageUrl ? (
-                <img
-                  src={api.getImageUrl(post.author.profileImageUrl)}
-                  alt={post.author.nickname}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-10 h-10 bg-gradient-to-br from-bluewings-light to-bluewings rounded-full flex items-center justify-center text-white font-bold">
-                  {post.author.nickname.charAt(0)}
+            <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <Avatar className="w-10 h-10">
+                  {post.author.profileImageUrl ? (
+                    <AvatarImage src={api.getImageUrl(post.author.profileImageUrl)} />
+                  ) : null}
+                  <AvatarFallback className="bg-blue-100 text-blue-700">
+                    {post.author.nickname.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-slate-900">{post.author.nickname}</span>
+                    <GradeBadge grade={post.author.grade} showName={false} size="sm" />
+                  </div>
+                  <span className="text-sm text-slate-400">{formatDate(post.createdAt)}</span>
                 </div>
-              )}
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{post.author.nickname}</span>
-                  <GradeBadge grade={post.author.grade} showName={false} size="sm" />
-                </div>
-                <span className="text-sm text-gray-400">{formatDate(post.createdAt)}</span>
               </div>
-            </div>
-            <div className="flex items-center gap-3 text-sm text-gray-500">
-              <span className="flex items-center gap-1">
+              <div className="flex items-center gap-1 text-sm text-slate-400">
                 <Eye className="w-4 h-4" />
                 {post.viewCount}
-              </span>
-            </div>
-          </div>
-
-          <div className="prose max-w-none mb-6 whitespace-pre-wrap">{post.content}</div>
-
-          {post.images && post.images.length > 0 && (
-            <div className="mb-6">
-              <div
-                className={`grid gap-2 ${
-                  post.images.length === 1
-                    ? 'grid-cols-1'
-                    : post.images.length === 2
-                    ? 'grid-cols-2'
-                    : 'grid-cols-2 md:grid-cols-3'
-                }`}
-              >
-                {post.images.map((image, index) => (
-                  <div
-                    key={image.id}
-                    className={`relative cursor-pointer overflow-hidden rounded-lg bg-gray-100 ${
-                      post.images.length === 1 ? 'aspect-video' : 'aspect-square'
-                    }`}
-                    onClick={() => setSelectedImageIndex(index)}
-                  >
-                    <img
-                      src={api.getImageUrl(image.filePath)}
-                      alt={image.originalName}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                    />
-                  </div>
-                ))}
               </div>
             </div>
-          )}
 
-          <div className="flex items-center gap-4 py-4 border-t">
-            <button
-              onClick={handleLike}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${
-                post.isLiked ? 'bg-red-50 text-red-500' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              <Heart className={`w-5 h-5 ${post.isLiked ? 'fill-current' : ''}`} />
-              <span>{post.likeCount}</span>
-            </button>
-            <div className="flex items-center gap-2 text-gray-500">
-              <MessageCircle className="w-5 h-5" />
-              <span>{post.commentCount}</span>
+            <div className="prose max-w-none mb-6 whitespace-pre-wrap text-slate-700">
+              {post.content}
             </div>
-          </div>
-        </article>
 
-        <section className="bg-white mt-2 p-4">
-          <h2 className="font-semibold mb-4">댓글 {comments.length}</h2>
+            {post.images && post.images.length > 0 && (
+              <div className="mb-6">
+                <div
+                  className={`grid gap-2 ${
+                    post.images.length === 1
+                      ? 'grid-cols-1'
+                      : post.images.length === 2
+                      ? 'grid-cols-2'
+                      : 'grid-cols-2 md:grid-cols-3'
+                  }`}
+                >
+                  {post.images.map((image, index) => (
+                    <div
+                      key={image.id}
+                      className={`relative cursor-pointer overflow-hidden rounded-xl bg-slate-100 ${
+                        post.images.length === 1 ? 'aspect-video' : 'aspect-square'
+                      }`}
+                      onClick={() => setSelectedImageIndex(index)}
+                    >
+                      <img
+                        src={api.getImageUrl(image.filePath)}
+                        alt={image.originalName}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-          <div className="divide-y">
-            {comments.map((comment) => (
-              <CommentItem
-                key={comment.id}
-                comment={comment}
-                onEdit={handleCommentEdit}
-                onDelete={handleCommentDelete}
-                onReply={handleReply}
-              />
-            ))}
-          </div>
+            <Separator className="my-4" />
 
-          {comments.length === 0 && <p className="text-center py-8 text-gray-400">아직 댓글이 없습니다.</p>}
-        </section>
+            <div className="flex items-center gap-4">
+              <Button
+                variant={post.isLiked ? 'default' : 'outline'}
+                size="sm"
+                onClick={handleLike}
+                className={post.isLiked ? 'bg-red-500 hover:bg-red-600' : ''}
+              >
+                <Heart className={`w-4 h-4 mr-1 ${post.isLiked ? 'fill-current' : ''}`} />
+                {post.likeCount}
+              </Button>
+              <div className="flex items-center gap-1 text-slate-500">
+                <MessageCircle className="w-4 h-4" />
+                <span className="text-sm">{post.commentCount}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm border-0 rounded-none mt-2">
+          <CardContent className="p-4">
+            <h2 className="font-semibold mb-4">댓글 {comments.length}</h2>
+
+            <div className="divide-y divide-slate-100">
+              {comments.map((comment) => (
+                <CommentItem
+                  key={comment.id}
+                  comment={comment}
+                  onEdit={handleCommentEdit}
+                  onDelete={handleCommentDelete}
+                  onReply={handleReply}
+                />
+              ))}
+            </div>
+
+            {comments.length === 0 && (
+              <p className="text-center py-8 text-slate-400">아직 댓글이 없습니다.</p>
+            )}
+          </CardContent>
+        </Card>
 
         {showAuthUI && (
-          <form onSubmit={handleCommentSubmit} className="fixed bottom-0 left-0 right-0 bg-white border-t p-4">
+          <form onSubmit={handleCommentSubmit} className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 z-40">
             <div className="max-w-2xl mx-auto">
               {commentImages.length > 0 && (
                 <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
@@ -413,36 +429,39 @@ export default function PostDetailClient({ initialPost, postId }: PostDetailClie
                   className="hidden"
                   onChange={handleCommentImageSelect}
                 />
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => commentImageInputRef.current?.click()}
                   disabled={isUploadingImage || commentImages.length >= 3}
-                  className="p-3 text-gray-500 hover:bg-gray-100 rounded-full disabled:opacity-50"
+                  className="text-slate-500"
                 >
                   {isUploadingImage ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5" />}
-                </button>
-                <input
+                </Button>
+                <Input
                   type="text"
                   placeholder="댓글을 입력하세요..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  className="flex-1 px-4 py-3 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-bluewings/30"
+                  className="flex-1"
                 />
-                <button
+                <Button
                   type="submit"
+                  size="icon"
                   disabled={!newComment.trim() && commentImages.length === 0}
-                  className="p-3 bg-bluewings text-white rounded-full disabled:opacity-50"
+                  className="bg-blue-700 hover:bg-blue-800"
                 >
-                  <Send className="w-5 h-5" />
-                </button>
+                  <Send className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           </form>
         )}
 
         {!showAuthUI && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 text-center">
-            <Link href="/login" className="text-bluewings font-medium">
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 text-center z-40">
+            <Link href="/login" className="text-blue-700 font-medium">
               로그인하고 댓글을 작성하세요
             </Link>
           </div>
@@ -454,23 +473,27 @@ export default function PostDetailClient({ initialPost, postId }: PostDetailClie
           className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
           onClick={() => setSelectedImageIndex(null)}
         >
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setSelectedImageIndex(null)}
-            className="absolute top-4 right-4 p-2 text-white hover:bg-white/10 rounded-full"
+            className="absolute top-4 right-4 text-white hover:bg-white/10"
           >
             <X className="w-8 h-8" />
-          </button>
+          </Button>
 
           {selectedImageIndex > 0 && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedImageIndex(selectedImageIndex - 1);
               }}
-              className="absolute left-4 p-2 text-white hover:bg-white/10 rounded-full"
+              className="absolute left-4 text-white hover:bg-white/10"
             >
-              <ArrowLeft className="w-8 h-8" />
-            </button>
+              <ChevronLeft className="w-8 h-8" />
+            </Button>
           )}
 
           <img
@@ -481,15 +504,17 @@ export default function PostDetailClient({ initialPost, postId }: PostDetailClie
           />
 
           {selectedImageIndex < post.images.length - 1 && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedImageIndex(selectedImageIndex + 1);
               }}
-              className="absolute right-4 p-2 text-white hover:bg-white/10 rounded-full rotate-180"
+              className="absolute right-4 text-white hover:bg-white/10"
             >
-              <ArrowLeft className="w-8 h-8" />
-            </button>
+              <ChevronRight className="w-8 h-8" />
+            </Button>
           )}
 
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm">

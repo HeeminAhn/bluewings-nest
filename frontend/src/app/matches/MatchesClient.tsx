@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Calendar, Trophy } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Trophy, Loader2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Header, BottomNav } from '@/components/layout';
 import { MatchCard, StandingsTable } from '@/components/match';
 import { api } from '@/lib/api';
 import type { Match, LeagueStanding } from '@/lib/types';
@@ -80,76 +83,51 @@ export default function MatchesClient({ initialStandings, initialYear }: Matches
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3">
-              <img src="/android-chrome-512x512.png" alt="블루윙즈 둥지" className="w-10 h-10 rounded-lg object-cover" />
-              <h1 className="text-lg font-bold text-bluewings">경기 정보</h1>
-            </Link>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24">
+      <Header title="경기 정보" showBack />
 
-      <div className="bg-white border-b">
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="flex">
-            <button
-              onClick={() => setActiveTab('standings')}
-              className={`flex-1 py-3 text-center font-medium border-b-2 transition-colors ${
-                activeTab === 'standings'
-                  ? 'text-bluewings border-bluewings'
-                  : 'text-gray-500 border-transparent'
-              }`}
-            >
-              <Trophy className="w-5 h-5 inline-block mr-2" />
+      <div className="max-w-2xl mx-auto px-4 py-4">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Tab)} className="mb-4">
+          <TabsList className="grid w-full grid-cols-2 bg-white">
+            <TabsTrigger value="standings" className="data-[state=active]:bg-blue-700 data-[state=active]:text-white">
+              <Trophy className="w-4 h-4 mr-2" />
               순위표
-            </button>
-            <button
-              onClick={() => setActiveTab('schedule')}
-              className={`flex-1 py-3 text-center font-medium border-b-2 transition-colors ${
-                activeTab === 'schedule'
-                  ? 'text-bluewings border-bluewings'
-                  : 'text-gray-500 border-transparent'
-              }`}
-            >
-              <Calendar className="w-5 h-5 inline-block mr-2" />
+            </TabsTrigger>
+            <TabsTrigger value="schedule" className="data-[state=active]:bg-blue-700 data-[state=active]:text-white">
+              <Calendar className="w-4 h-4 mr-2" />
               일정/결과
-            </button>
-          </div>
-        </div>
-      </div>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
 
-      <main className="max-w-2xl mx-auto px-4 py-4">
         {activeTab === 'schedule' && (
           <>
-            <div className="flex items-center justify-between mb-4 bg-white rounded-xl p-3">
-              <button
-                onClick={handlePrevMonth}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <span className="font-bold text-lg">
-                {currentYear}년 {monthNames[currentMonth - 1]}
-              </span>
-              <button
-                onClick={handleNextMonth}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
+            <Card className="shadow-sm border-0 mb-4">
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between">
+                  <Button variant="ghost" size="icon" onClick={handlePrevMonth}>
+                    <ChevronLeft className="w-5 h-5" />
+                  </Button>
+                  <span className="font-bold text-lg text-slate-900">
+                    {currentYear}년 {monthNames[currentMonth - 1]}
+                  </span>
+                  <Button variant="ghost" size="icon" onClick={handleNextMonth}>
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
             {isLoading ? (
               <div className="flex justify-center py-12">
-                <div className="w-8 h-8 border-4 border-bluewings border-t-transparent rounded-full animate-spin" />
+                <Loader2 className="w-8 h-8 animate-spin text-blue-700" />
               </div>
             ) : matches.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                이 달에 예정된 경기가 없습니다.
-              </div>
+              <Card className="shadow-sm border-0">
+                <CardContent className="py-12 text-center text-slate-500">
+                  이 달에 예정된 경기가 없습니다.
+                </CardContent>
+              </Card>
             ) : (
               <div className="space-y-3">
                 {matches.map((match) => (
@@ -164,18 +142,22 @@ export default function MatchesClient({ initialStandings, initialYear }: Matches
           <>
             {isLoading ? (
               <div className="flex justify-center py-12">
-                <div className="w-8 h-8 border-4 border-bluewings border-t-transparent rounded-full animate-spin" />
+                <Loader2 className="w-8 h-8 animate-spin text-blue-700" />
               </div>
             ) : standings.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                순위 정보가 없습니다.
-              </div>
+              <Card className="shadow-sm border-0">
+                <CardContent className="py-12 text-center text-slate-500">
+                  순위 정보가 없습니다.
+                </CardContent>
+              </Card>
             ) : (
               <StandingsTable standings={standings} />
             )}
           </>
         )}
-      </main>
+      </div>
+
+      <BottomNav />
     </div>
   );
 }
