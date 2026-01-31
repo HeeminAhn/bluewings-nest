@@ -10,11 +10,14 @@ COPY gradle ./gradle
 # Download dependencies
 RUN gradle dependencies --no-daemon || true
 
+# Cache buster for source changes
+ARG CACHEBUST=1
+
 # Copy source code
 COPY src ./src
 
-# Build the application
-RUN gradle build -Dquarkus.package.jar.type=uber-jar -x test --no-daemon
+# Build the application (--no-build-cache to ensure fresh build)
+RUN gradle build -Dquarkus.package.jar.type=uber-jar -x test --no-daemon --no-build-cache
 
 # Stage 2: Runtime
 FROM registry.access.redhat.com/ubi9/openjdk-21-runtime:1.20
@@ -25,7 +28,7 @@ WORKDIR /app
 COPY --from=builder /app/build/*-runner.jar /app/application.jar
 
 # Copy JWT keys
-COPY publicKey.pem privateKey.pem ./
+COPY src/main/resources/publicKey.pem src/main/resources/privateKey.pem ./
 
 # Create uploads directory
 RUN mkdir -p /app/uploads

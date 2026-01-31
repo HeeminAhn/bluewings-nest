@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Search, PenSquare, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -36,6 +36,10 @@ export default function PostListClient({
   const [isLoading, setIsLoading] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState(initialKeyword);
 
+  // 첫 렌더링 추적
+  const isFirstRender = useRef(true);
+  const prevParams = useRef({ page: 0, keyword: '', categoryId: undefined as number | undefined });
+
   // URL에서 현재 파라미터 읽기
   const page = parseInt(searchParams.get('page') || '0');
   const keyword = searchParams.get('keyword') || '';
@@ -44,32 +48,41 @@ export default function PostListClient({
     : undefined;
 
   // URL 파라미터가 변경되면 데이터 refetch
-  const fetchPosts = useCallback(async () => {
-    // 초기 렌더링 시 서버 데이터와 동일하면 fetch 하지 않음
+  useEffect(() => {
+    // 첫 렌더링 시에는 서버 데이터 사용
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      prevParams.current = { page, keyword, categoryId };
+      return;
+    }
+
+    // 파라미터가 변경되지 않았으면 skip
     if (
-      page === initialCurrentPage &&
-      keyword === initialKeyword &&
-      categoryId === initialCategoryId
+      prevParams.current.page === page &&
+      prevParams.current.keyword === keyword &&
+      prevParams.current.categoryId === categoryId
     ) {
       return;
     }
 
-    setIsLoading(true);
-    const response = keyword
-      ? await api.searchPosts(keyword, page, 20, categoryId)
-      : await api.getPosts(page, 20, categoryId);
+    prevParams.current = { page, keyword, categoryId };
 
-    if (response.success && response.data) {
-      setPosts(response.data.posts);
-      setTotalPages(response.data.totalPages);
-      setCurrentPage(response.data.currentPage);
-    }
-    setIsLoading(false);
-  }, [page, keyword, categoryId, initialCurrentPage, initialKeyword, initialCategoryId]);
+    const fetchPosts = async () => {
+      setIsLoading(true);
+      const response = keyword
+        ? await api.searchPosts(keyword, page, 20, categoryId)
+        : await api.getPosts(page, 20, categoryId);
 
-  useEffect(() => {
+      if (response.success && response.data) {
+        setPosts(response.data.posts);
+        setTotalPages(response.data.totalPages);
+        setCurrentPage(response.data.currentPage);
+      }
+      setIsLoading(false);
+    };
+
     fetchPosts();
-  }, [fetchPosts]);
+  }, [page, keyword, categoryId]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
