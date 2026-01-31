@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Calendar, Trophy, Loader2 } from 'lucide-rea
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Header, BottomNav } from '@/components/layout';
+import { Header } from '@/components/layout';
 import { MatchCard, StandingsTable } from '@/components/match';
 import { api } from '@/lib/api';
 import type { Match, LeagueStanding } from '@/lib/types';
@@ -84,7 +84,7 @@ export default function MatchesClient({ initialStandings, initialYear }: Matches
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24">
-      <Header title="경기 정보" showBack />
+      <Header title="경기 정보" />
 
       <div className="max-w-2xl mx-auto px-4 py-4">
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Tab)} className="mb-4">
@@ -156,8 +156,6 @@ export default function MatchesClient({ initialStandings, initialYear }: Matches
           </>
         )}
       </div>
-
-      <BottomNav />
     </div>
   );
 }

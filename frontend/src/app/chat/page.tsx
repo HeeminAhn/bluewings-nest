@@ -188,16 +188,13 @@ export default function ChatPage() {
     <div className="h-[100dvh] flex flex-col bg-gradient-to-b from-slate-50 to-slate-100">
       <Header
         title="실시간 채팅"
-        showBack
         rightAction={
           <div className="flex items-center gap-2 text-sm text-slate-500">
-            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-slate-400'}`} />
-            {onlineCount > 0 && (
-              <span className="flex items-center gap-1">
-                <Users className="w-4 h-4" />
-                {onlineCount}
-              </span>
-            )}
+            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-400'}`} />
+            <span className="flex items-center gap-1">
+              <Users className="w-4 h-4" />
+              {onlineCount}
+            </span>
           </div>
         }
       />

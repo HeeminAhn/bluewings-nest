@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { Home, Calendar, MessageSquare, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const navItems = [
   { id: 'home', icon: Home, label: '홈', path: '/' },
@@ -11,9 +12,20 @@ const navItems = [
   { id: 'mypage', icon: User, label: 'MY', path: '/mypage' },
 ];
 
-export function BottomNav() {
+// BottomNav를 숨길 페이지 경로
+const hiddenPaths = ['/login', '/signup', '/chat'];
+
+interface BottomNavProps {
+  className?: string;
+}
+
+export function BottomNav({ className }: BottomNavProps) {
   const pathname = usePathname();
   const router = useRouter();
+
+  // 특정 페이지에서는 숨김
+  const shouldHide = hiddenPaths.some(path => pathname.startsWith(path));
+  if (shouldHide) return null;
 
   const getActiveTab = () => {
     if (pathname === '/') return 'home';
@@ -26,7 +38,7 @@ export function BottomNav() {
   const activeTab = getActiveTab();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-200 px-2 py-1 z-50">
+    <div className={cn("fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-200 px-2 py-1 z-50 md:hidden", className)}>
       <div className="flex justify-around items-center max-w-lg mx-auto">
         {navItems.map((item) => (
           <Button

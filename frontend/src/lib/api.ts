@@ -47,8 +47,12 @@ const getBackendUrl = () => {
 };
 
 // 클라이언트에서는 백엔드 직접 호출, 서버에서는 localhost 사용
-const API_BASE_URL = typeof window !== 'undefined' ? `${getBackendUrl()}/api` : 'http://localhost:8080/api';
-const BACKEND_URL = typeof window !== 'undefined' ? getBackendUrl() : 'http://localhost:8080';
+const getServerBackendUrl = () => {
+  // 로컬 개발 환경에서는 8180 사용
+  return process.env.BACKEND_URL || 'http://localhost:8180';
+};
+const API_BASE_URL = typeof window !== 'undefined' ? `${getBackendUrl()}/api` : `${getServerBackendUrl()}/api`;
+const BACKEND_URL = typeof window !== 'undefined' ? getBackendUrl() : getServerBackendUrl();
 
 class ApiService {
   private getToken(): string | null {

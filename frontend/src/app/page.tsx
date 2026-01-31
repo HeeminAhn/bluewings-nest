@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   LogOut,
   CalendarCheck,
@@ -29,7 +30,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { BottomNav } from '@/components/layout';
 import { Toast } from '@/components/common';
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/lib/api';
@@ -151,7 +151,6 @@ export default function HomePage() {
           <div className="h-32 bg-white rounded-xl shadow animate-pulse" />
           <div className="h-48 bg-white rounded-xl shadow animate-pulse" />
         </div>
-        <BottomNav />
       </div>
     );
   }
@@ -181,7 +180,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24 md:pb-8">
       {/* 히어로 헤더 */}
       <div className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 text-white overflow-hidden">
         {/* 배경 패턴 */}
@@ -190,11 +189,17 @@ export default function HomePage() {
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full translate-y-1/2 -translate-x-1/2" />
         </div>
 
-        <div className="relative px-4 pt-4 pb-6">
+        <div className="relative px-4 pt-4 pb-6 max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
-                <span className="text-2xl">🦅</span>
+              <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center overflow-hidden">
+                <Image
+                  src="/favicon-48x48.png"
+                  alt="블루윙즈 둥지"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
               </div>
               <div>
                 <h1 className="font-bold text-xl tracking-tight">블루윙즈 둥지</h1>
@@ -299,14 +304,16 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* 프로필 카드 */}
-      <div className="px-4 -mt-4">
-        <Card className="shadow-lg border-0">
+      {/* 메인 콘텐츠 */}
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 px-4 -mt-4">
+          {/* 프로필 카드 */}
+          <Card className="shadow-lg border-0 lg:col-span-1">
           <CardContent className="p-4">
             <div className="flex items-center gap-4 mb-4">
               <Avatar className="w-14 h-14 border-2 border-blue-100">
                 {member.profileImageUrl ? (
-                  <AvatarImage src={member.profileImageUrl} />
+                  <AvatarImage src={api.getImageUrl(member.profileImageUrl)} />
                 ) : null}
                 <AvatarFallback className="bg-gradient-to-br from-blue-100 to-blue-200 text-2xl">
                   {gradeEmoji[member.grade?.currentGrade?.name || 'ROOKIE']}
@@ -361,40 +368,9 @@ export default function HomePage() {
             </Button>
           </CardContent>
         </Card>
-      </div>
 
-      {/* 공지사항 배너 */}
-      {notices.length > 0 && (
-        <div className="px-4 mt-4">
-          <Link href={`/notices/${notices[noticeIndex]?.id}`}>
-            <Card className="shadow-md border-0 hover:shadow-lg transition-shadow">
-              <CardContent className="p-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Volume2 className="w-4 h-4 text-red-500" />
-                  </div>
-                  <div className="flex-1 min-w-0 h-5 overflow-hidden">
-                    <p
-                      className={`text-sm text-slate-700 truncate transition-all duration-300 ${
-                        isNoticeAnimating
-                          ? '-translate-y-full opacity-0'
-                          : 'translate-y-0 opacity-100'
-                      }`}
-                    >
-                      {notices[noticeIndex]?.title}
-                    </p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
-      )}
-
-      {/* 인기글 */}
-      <div className="px-4 mt-4">
-        <Card className="shadow-lg border-0">
+        {/* 인기글 - PC에서는 우측에 표시 */}
+        <Card className="shadow-lg border-0 lg:col-span-2 lg:row-span-2">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
@@ -465,73 +441,103 @@ export default function HomePage() {
             )}
           </CardContent>
         </Card>
+
+        {/* 공지사항 배너 */}
+        {notices.length > 0 && (
+          <div className="lg:col-span-1">
+          <Link href={`/notices/${notices[noticeIndex]?.id}`}>
+            <Card className="shadow-md border-0 hover:shadow-lg transition-shadow">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Volume2 className="w-4 h-4 text-red-500" />
+                  </div>
+                  <div className="flex-1 min-w-0 h-5 overflow-hidden">
+                    <p
+                      className={`text-sm text-slate-700 truncate transition-all duration-300 ${
+                        isNoticeAnimating
+                          ? '-translate-y-full opacity-0'
+                          : 'translate-y-0 opacity-100'
+                      }`}
+                    >
+                      {notices[noticeIndex]?.title}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+          </div>
+        )}
+        </div>
       </div>
 
       {/* 바로가기 */}
-      <div className="px-4 mt-4 pb-4">
+      <div className="max-w-7xl mx-auto px-4 mt-4 pb-4">
         <Card className="shadow-lg border-0">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">바로가기</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-1 p-2">
-            {[
-              {
-                href: '/notices',
-                icon: Bell,
-                iconBg: 'bg-red-100',
-                iconColor: 'text-red-500',
-                title: '공지사항',
-                desc: '새로운 소식을 확인하세요',
-              },
-              {
-                href: '/matches',
-                icon: Trophy,
-                iconBg: 'bg-green-100',
-                iconColor: 'text-green-600',
-                title: '경기 일정',
-                desc: '일정 및 순위 확인',
-              },
-              {
-                href: '/posts',
-                icon: MessageSquare,
-                iconBg: 'bg-blue-100',
-                iconColor: 'text-blue-600',
-                title: '커뮤니티',
-                desc: '팬들과 소통하세요',
-              },
-              {
-                href: '/chat',
-                icon: MessagesSquare,
-                iconBg: 'bg-purple-100',
-                iconColor: 'text-purple-600',
-                title: '실시간 채팅',
-                desc: '서포터들과 대화하세요',
-              },
-            ].map((item) => (
-              <Link key={item.href} href={item.href}>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start h-auto py-3 px-3 hover:bg-slate-50"
-                >
-                  <div
-                    className={`w-10 h-10 ${item.iconBg} rounded-xl flex items-center justify-center mr-3`}
+          <CardContent className="p-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+              {[
+                {
+                  href: '/notices',
+                  icon: Bell,
+                  iconBg: 'bg-red-100',
+                  iconColor: 'text-red-500',
+                  title: '공지사항',
+                  desc: '새로운 소식을 확인하세요',
+                },
+                {
+                  href: '/matches',
+                  icon: Trophy,
+                  iconBg: 'bg-green-100',
+                  iconColor: 'text-green-600',
+                  title: '경기 일정',
+                  desc: '일정 및 순위 확인',
+                },
+                {
+                  href: '/posts',
+                  icon: MessageSquare,
+                  iconBg: 'bg-blue-100',
+                  iconColor: 'text-blue-600',
+                  title: '커뮤니티',
+                  desc: '팬들과 소통하세요',
+                },
+                {
+                  href: '/chat',
+                  icon: MessagesSquare,
+                  iconBg: 'bg-purple-100',
+                  iconColor: 'text-purple-600',
+                  title: '실시간 채팅',
+                  desc: '서포터들과 대화하세요',
+                },
+              ].map((item) => (
+                <Link key={item.href} href={item.href}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start h-auto py-3 px-3 hover:bg-slate-50 hover:shadow-md transition-all"
                   >
-                    <item.icon className={`w-5 h-5 ${item.iconColor}`} />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <p className="font-medium text-slate-800">{item.title}</p>
-                    <p className="text-xs text-slate-500">{item.desc}</p>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-300" />
-                </Button>
-              </Link>
-            ))}
+                    <div
+                      className={`w-10 h-10 ${item.iconBg} rounded-xl flex items-center justify-center mr-3`}
+                    >
+                      <item.icon className={`w-5 h-5 ${item.iconColor}`} />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-medium text-slate-800">{item.title}</p>
+                      <p className="text-xs text-slate-500">{item.desc}</p>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-300 lg:hidden" />
+                  </Button>
+                </Link>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* 하단 네비게이션 */}
-      <BottomNav />
 
       {/* 포츈쿠키 모달 */}
       {fortuneCookie && (

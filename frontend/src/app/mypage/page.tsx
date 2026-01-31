@@ -22,7 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Header, BottomNav } from '@/components/layout';
+import { Header } from '@/components/layout';
 import { Toast } from '@/components/common';
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/lib/api';
@@ -91,7 +91,7 @@ export default function MyPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24">
-      <Header title="마이페이지" showBack />
+      <Header title="마이페이지" />
 
       <main className="max-w-2xl mx-auto px-4 py-4 space-y-4">
         {/* 프로필 카드 */}
@@ -218,8 +218,6 @@ export default function MyPage() {
           </CardContent>
         </Card>
       </main>
-
-      <BottomNav />
 
       {/* 탈퇴 확인 모달 */}
       {showWithdrawModal && (

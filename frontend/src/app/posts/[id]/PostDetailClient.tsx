@@ -242,46 +242,7 @@ export default function PostDetailClient({ initialPost, postId }: PostDetailClie
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24">
-      <Header
-        title=""
-        showBack
-        onBack={() => router.push('/posts')}
-        rightAction={
-          <div className="flex items-center gap-1">
-            {showAuthUI && !isAuthor && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowReportModal(true)}
-                className="text-slate-500 hover:text-red-500"
-              >
-                <Flag className="w-5 h-5" />
-              </Button>
-            )}
-            {isAuthor && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="w-5 h-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href={`/posts/${postId}/edit`} className="flex items-center gap-2">
-                      <Edit2 className="w-4 h-4" />
-                      수정
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleDelete} className="text-red-500">
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    삭제
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-        }
-      />
+      <Header title="커뮤니티" />
 
       <main className="max-w-2xl mx-auto">
         <Card className="shadow-sm border-0 rounded-none">
@@ -315,9 +276,42 @@ export default function PostDetailClient({ initialPost, postId }: PostDetailClie
                   <span className="text-sm text-slate-400">{formatDate(post.createdAt)}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-1 text-sm text-slate-400">
-                <Eye className="w-4 h-4" />
-                {post.viewCount}
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 text-sm text-slate-400">
+                  <Eye className="w-4 h-4" />
+                  {post.viewCount}
+                </div>
+                {showAuthUI && !isAuthor && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowReportModal(true)}
+                    className="text-slate-400 hover:text-red-500 h-8 w-8"
+                  >
+                    <Flag className="w-4 h-4" />
+                  </Button>
+                )}
+                {isAuthor && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
+                        <Link href={`/posts/${postId}/edit`} className="flex items-center gap-2">
+                          <Edit2 className="w-4 h-4" />
+                          수정
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleDelete} className="text-red-500">
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        삭제
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
 

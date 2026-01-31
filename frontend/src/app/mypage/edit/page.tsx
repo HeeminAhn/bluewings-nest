@@ -152,7 +152,7 @@ export default function EditProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
-      <Header title="프로필 수정" showBack />
+      <Header title="프로필 수정" />
 
       <main className="max-w-2xl mx-auto p-4">
         <form onSubmit={handleSubmit} className="space-y-4">

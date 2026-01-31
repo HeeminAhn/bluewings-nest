@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Header, BottomNav } from '@/components/layout';
+import { Header } from '@/components/layout';
 import { GradeBadge } from '@/components/member/GradeBadge';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
@@ -96,7 +96,7 @@ export default function NoticesClient({
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24">
-      <Header title="공지사항" showBack />
+      <Header title="공지사항" />
 
       <main className="max-w-2xl mx-auto px-4 py-4">
         <form onSubmit={handleSearch} className="mb-4">
@@ -207,8 +207,6 @@ export default function NoticesClient({
           <PenSquare className="w-6 h-6" />
         </Link>
       )}
-
-      <BottomNav />
     </div>
   );
 }

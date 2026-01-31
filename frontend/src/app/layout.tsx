@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
+import { AppShell } from "@/components/layout";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -33,22 +34,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gradient-to-b from-slate-50 to-slate-100`}
       >
         <NextTopLoader
           color="#0066B3"
           initialPosition={0.08}
           crawlSpeed={200}
-          height={3}
+          height={2}
           crawl={true}
           showSpinner={false}
           easing="ease"
-          speed={200}
-          shadow="0 0 10px #0066B3,0 0 5px #0066B3"
+          speed={150}
         />
-        {children}
+        <div className="min-h-screen">
+          <AppShell>{children}</AppShell>
+        </div>
       </body>
     </html>
   );
