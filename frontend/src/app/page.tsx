@@ -200,7 +200,7 @@ export default function HomePage() {
               </div>
               <div>
                 <h1 className="font-bold text-xl tracking-tight">블루윙즈 둥지</h1>
-                <p className="text-blue-200 text-sm">모든 날개가 모이는 곳</p>
+                <p className="text-blue-200 text-sm">모든 푸른 날개가 모이는 곳</p>
               </div>
             </div>
             <div className="flex gap-2">

@@ -22,6 +22,7 @@ class PostRepository : PanacheRepository<Post> {
             SELECT DISTINCT p FROM Post p
             LEFT JOIN FETCH p.member
             LEFT JOIN FETCH p.category
+            WHERE p.deletedAt IS NULL
             ORDER BY p.createdAt DESC
             """.trimIndent(),
             Post::class.java
@@ -38,7 +39,7 @@ class PostRepository : PanacheRepository<Post> {
             SELECT DISTINCT p FROM Post p
             LEFT JOIN FETCH p.member
             LEFT JOIN FETCH p.category
-            WHERE p.member.id = :memberId
+            WHERE p.member.id = :memberId AND p.deletedAt IS NULL
             ORDER BY p.createdAt DESC
             """.trimIndent(),
             Post::class.java
@@ -50,11 +51,11 @@ class PostRepository : PanacheRepository<Post> {
     }
 
     fun countAll(): Long {
-        return count()
+        return count("deletedAt IS NULL")
     }
 
     fun countByMemberId(memberId: Long): Long {
-        return count("member.id", memberId)
+        return count("member.id = ?1 AND deletedAt IS NULL", memberId)
     }
 
     // N+1 해결: member, category를 함께 로드
@@ -64,7 +65,7 @@ class PostRepository : PanacheRepository<Post> {
             SELECT DISTINCT p FROM Post p
             LEFT JOIN FETCH p.member
             LEFT JOIN FETCH p.category
-            WHERE p.title LIKE :keyword
+            WHERE p.title LIKE :keyword AND p.deletedAt IS NULL
             ORDER BY p.createdAt DESC
             """.trimIndent(),
             Post::class.java
@@ -76,7 +77,7 @@ class PostRepository : PanacheRepository<Post> {
     }
 
     fun countByTitleKeyword(keyword: String): Long {
-        return count("title like ?1", "%$keyword%")
+        return count("title like ?1 AND deletedAt IS NULL", "%$keyword%")
     }
 
     // N+1 해결: member, category를 함께 로드
@@ -86,7 +87,7 @@ class PostRepository : PanacheRepository<Post> {
             SELECT DISTINCT p FROM Post p
             LEFT JOIN FETCH p.member
             LEFT JOIN FETCH p.category
-            WHERE p.createdAt >= :startDate
+            WHERE p.createdAt >= :startDate AND p.deletedAt IS NULL
             ORDER BY p.viewCount DESC, p.likeCount DESC
             """.trimIndent(),
             Post::class.java
@@ -96,7 +97,7 @@ class PostRepository : PanacheRepository<Post> {
             .resultList
     }
 
-    // N+1 해결: member, category를 함께 로드
+    // N+1 해결: member, category를 함께 로드 (어드민용 - 삭제된 게시글도 조회)
     fun findWithFilters(
         keyword: String?,
         authorNickname: String?,
@@ -104,10 +105,15 @@ class PostRepository : PanacheRepository<Post> {
         startDate: LocalDateTime?,
         endDate: LocalDateTime?,
         page: Int,
-        size: Int
+        size: Int,
+        includeDeleted: Boolean = false
     ): Pair<List<Post>, Long> {
         val conditions = mutableListOf<String>()
         val params = mutableMapOf<String, Any>()
+
+        if (!includeDeleted) {
+            conditions.add("p.deletedAt IS NULL")
+        }
 
         if (!keyword.isNullOrBlank()) {
             conditions.add("(p.title LIKE :keyword OR p.content LIKE :keyword)")
@@ -172,7 +178,7 @@ class PostRepository : PanacheRepository<Post> {
             SELECT DISTINCT p FROM Post p
             LEFT JOIN FETCH p.member
             LEFT JOIN FETCH p.category
-            WHERE p.category.id = :categoryId
+            WHERE p.category.id = :categoryId AND p.deletedAt IS NULL
             ORDER BY p.createdAt DESC
             """.trimIndent(),
             Post::class.java
@@ -184,7 +190,7 @@ class PostRepository : PanacheRepository<Post> {
     }
 
     fun countByCategory(categoryId: Long): Long {
-        return count("category.id", categoryId)
+        return count("category.id = ?1 AND deletedAt IS NULL", categoryId)
     }
 
     // ============ 원자적 카운트 업데이트 ============
