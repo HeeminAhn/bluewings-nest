@@ -94,6 +94,17 @@ export async function getPost(id: number): Promise<Post | null> {
   });
 }
 
+export async function getPostsByMember(
+  memberId: number,
+  page = 0,
+  size = 20
+): Promise<PagedPostResponse | null> {
+  return serverFetch<PagedPostResponse>(
+    `/posts/member/${memberId}?page=${page}&size=${size}`,
+    { next: { revalidate: 60 } }
+  );
+}
+
 export async function getComments(
   postId: number,
   page = 0,
