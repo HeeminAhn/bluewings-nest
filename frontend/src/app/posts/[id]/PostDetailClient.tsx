@@ -62,6 +62,8 @@ export default function PostDetailClient({ initialPost, postId }: PostDetailClie
 
   useEffect(() => {
     fetchComments();
+    // 클라이언트에서 조회수 증가 (SSR에서는 증가 안함)
+    api.getPost(postId, false);
   }, [postId]);
 
   useEffect(() => {

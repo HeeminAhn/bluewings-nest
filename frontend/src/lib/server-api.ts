@@ -89,8 +89,9 @@ export async function searchPosts(
 }
 
 export async function getPost(id: number): Promise<Post | null> {
-  return serverFetch<Post>(`/posts/${id}`, {
-    next: { revalidate: 30 }, // 30초 캐시 (조회수는 약간 지연됨)
+  // SSR에서는 조회수 증가 안함 (클라이언트에서 증가)
+  return serverFetch<Post>(`/posts/${id}?skipViewCount=true`, {
+    next: { revalidate: 30 },
   });
 }
 
