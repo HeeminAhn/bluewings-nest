@@ -186,11 +186,11 @@ export default function ImageUpload({ images, onImagesChange, maxImages = 5 }: I
               <button
                 type="button"
                 onClick={() => handleRemoveImage(index)}
-                className="absolute top-2 right-2 w-6 h-6 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 w-7 h-7 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center transition-colors"
               >
                 <X className="w-4 h-4 text-white" />
               </button>
-              <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-2 py-1 hidden md:block md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <p className="text-xs text-white truncate">{image.originalName}</p>
               </div>
             </div>
