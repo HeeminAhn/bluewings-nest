@@ -15,8 +15,8 @@ const navItems = [
 // BottomNav를 숨길 페이지 경로
 const hiddenPaths = ['/login', '/signup', '/chat', '/posts/write', '/notices/write', '/mypage/edit'];
 
-// 동적 경로 패턴 (edit 페이지 등)
-const hiddenPatterns = [/\/posts\/\d+\/edit/, /\/notices\/\d+\/edit/];
+// 동적 경로 패턴 (상세 페이지, edit 페이지 등)
+const hiddenPatterns = [/\/posts\/\d+$/, /\/posts\/\d+\/edit/, /\/notices\/\d+$/, /\/notices\/\d+\/edit/];
 
 interface BottomNavProps {
   className?: string;
