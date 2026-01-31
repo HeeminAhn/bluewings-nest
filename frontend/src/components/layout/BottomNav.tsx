@@ -13,7 +13,10 @@ const navItems = [
 ];
 
 // BottomNav를 숨길 페이지 경로
-const hiddenPaths = ['/login', '/signup', '/chat'];
+const hiddenPaths = ['/login', '/signup', '/chat', '/posts/write', '/notices/write', '/mypage/edit'];
+
+// 동적 경로 패턴 (edit 페이지 등)
+const hiddenPatterns = [/\/posts\/\d+\/edit/, /\/notices\/\d+\/edit/];
 
 interface BottomNavProps {
   className?: string;
@@ -24,7 +27,8 @@ export function BottomNav({ className }: BottomNavProps) {
   const router = useRouter();
 
   // 특정 페이지에서는 숨김
-  const shouldHide = hiddenPaths.some(path => pathname.startsWith(path));
+  const shouldHide = hiddenPaths.some(path => pathname.startsWith(path)) ||
+    hiddenPatterns.some(pattern => pattern.test(pathname));
   if (shouldHide) return null;
 
   const getActiveTab = () => {
@@ -38,7 +42,10 @@ export function BottomNav({ className }: BottomNavProps) {
   const activeTab = getActiveTab();
 
   return (
-    <div className={cn("fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-200 px-2 py-1 z-50 md:hidden", className)}>
+    <div
+      className={cn("fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-200 px-2 py-1 z-50 md:hidden", className)}
+      style={{ viewTransitionName: 'bottom-nav' }}
+    >
       <div className="flex justify-around items-center max-w-lg mx-auto">
         {navItems.map((item) => (
           <Button

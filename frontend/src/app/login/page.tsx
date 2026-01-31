@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,8 +36,14 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-slate-50 to-slate-100">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
-            <span className="text-4xl">🦅</span>
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg overflow-hidden">
+            <Image
+              src="/favicon-48x48.png"
+              alt="블루윙즈 둥지"
+              width={56}
+              height={56}
+              className="object-contain"
+            />
           </div>
           <h1 className="text-2xl font-bold text-slate-900">블루윙즈 둥지</h1>
           <p className="text-slate-500 mt-2">수원의 수원에 의한 수원을 위한</p>

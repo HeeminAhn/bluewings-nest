@@ -181,13 +181,10 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24 md:pb-8">
-      {/* 히어로 헤더 */}
-      <div className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 text-white overflow-hidden">
-        {/* 배경 패턴 */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full translate-y-1/2 -translate-x-1/2" />
-        </div>
+      {/* 히어로 헤더 - 청백적 */}
+      <div className="relative bluewings-stripe text-white overflow-hidden">
+        {/* 오버레이 (가독성 향상) */}
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/60 to-blue-800/80" />
 
         <div className="relative px-4 pt-4 pb-6 max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
