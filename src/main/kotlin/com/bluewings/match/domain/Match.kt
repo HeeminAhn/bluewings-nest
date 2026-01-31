@@ -57,8 +57,9 @@ class Match() {
     var updatedAt: Instant = Instant.now()
 
     val isHomeGame: Boolean
-        get() = homeTeam.contains("수원")
+        get() = homeTeam.contains("수원 삼성") || homeTeam.contains("블루윙즈")
 
     val isSuwonMatch: Boolean
-        get() = homeTeam.contains("수원") || awayTeam.contains("수원")
+        get() = homeTeam.contains("수원 삼성") || homeTeam.contains("블루윙즈") ||
+                awayTeam.contains("수원 삼성") || awayTeam.contains("블루윙즈")
 }

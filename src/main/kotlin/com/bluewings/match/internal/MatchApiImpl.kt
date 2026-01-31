@@ -42,7 +42,7 @@ class MatchApiImpl(
     override fun hasMatchToday(): Boolean {
         val today = LocalDate.now()
         return matchRepository.count(
-            "matchDate = ?1 and (homeTeam like '%수원%' or awayTeam like '%수원%')",
+            "matchDate = ?1 and (homeTeam like '%수원 삼성%' or homeTeam like '%블루윙즈%' or awayTeam like '%수원 삼성%' or awayTeam like '%블루윙즈%')",
             today
         ) > 0
     }
@@ -50,7 +50,7 @@ class MatchApiImpl(
     override fun getCurrentRanking(): Int? {
         val currentSeason = Year.now().toString()
         val standing = standingRepository.find(
-            "season = ?1 and teamName like '%수원%'", currentSeason
+            "season = ?1 and (teamName like '%수원 삼성%' or teamName like '%블루윙즈%')", currentSeason
         ).firstResult()
         return standing?.position
     }

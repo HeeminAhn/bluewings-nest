@@ -47,5 +47,5 @@ class LeagueStanding() {
     var updatedAt: Instant = Instant.now()
 
     val isSuwon: Boolean
-        get() = teamName.contains("수원")
+        get() = teamName.contains("수원 삼성") || teamName.contains("블루윙즈")
 }
