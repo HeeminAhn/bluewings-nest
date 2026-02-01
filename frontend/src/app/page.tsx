@@ -155,7 +155,8 @@ export default function HomePage() {
     );
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  // 한국시간(KST) 기준 오늘 날짜
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
   const activityStats = member.grade?.activityStats;
   const alreadyAttended = activityStats?.lastAttendanceDate === today;
   const totalPoints = member.grade?.currentPoints || 0;
@@ -191,7 +192,7 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center overflow-hidden">
                 <Image
-                  src="/android-chrome-512x512.png"
+                  src="/logo.svg"
                   alt="블루윙즈 둥지"
                   width={40}
                   height={40}

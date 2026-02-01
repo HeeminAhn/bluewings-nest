@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 420">
+  <!-- Background -->
+  <rect width="512" height="420" fill="#2563eb"/>
+
+  <!-- Left clouds -->
+  <g fill="white">
+    <ellipse cx="125" cy="135" rx="18" ry="12"/>
+    <ellipse cx="148" cy="128" rx="16" ry="11"/>
+    <ellipse cx="171" cy="133" rx="17" ry="11"/>
+  </g>
+
+  <!-- Right clouds -->
+  <g fill="white">
+    <ellipse cx="341" cy="133" rx="17" ry="11"/>
+    <ellipse cx="364" cy="128" rx="16" ry="11"/>
+    <ellipse cx="387" cy="135" rx="18" ry="12"/>
+  </g>
+
+  <!-- Left star -->
+  <polygon fill="white" points="100,175 104,186 116,186 107,193 110,205 100,198 90,205 93,193 84,186 96,186"/>
+
+  <!-- Right star -->
+  <polygon fill="white" points="412,175 416,186 428,186 419,193 422,205 412,198 402,205 405,193 396,186 408,186"/>
+
+  <!-- Main scarf body - curved banner -->
+  <path d="M95,220
+           Q120,175 256,175
+           Q392,175 417,220
+           L410,260
+           Q385,220 256,220
+           Q127,220 102,260
+           Z"
+        fill="#1e40af" stroke="#1e3a8a" stroke-width="3"/>
+
+  <!-- Scarf text area (lighter blue inner) -->
+  <path d="M105,218
+           Q130,180 256,180
+           Q382,180 407,218
+           L402,252
+           Q377,218 256,218
+           Q135,218 110,252
+           Z"
+        fill="#2563eb"/>
+
+  <!-- SUWON Text with stars -->
+  <text x="256" y="228"
+        font-family="Arial Black, Helvetica, sans-serif"
+        font-size="42"
+        font-weight="900"
+        fill="white"
+        text-anchor="middle"
+        dominant-baseline="middle">★ SUWON ★</text>
+
+  <!-- Left scarf end -->
+  <g>
+    <!-- Red stripe (outer) -->
+    <path d="M102,255 L88,340 L100,340 L112,255 Z" fill="#dc2626"/>
+    <!-- White stripe (middle) -->
+    <path d="M106,255 L93,340 L108,340 L118,255 Z" fill="white"/>
+    <!-- Blue stripe (inner) -->
+    <path d="M112,255 L101,340 L114,340 L124,255 Z" fill="#1e40af"/>
+
+    <!-- Fringe -->
+    <rect x="89" y="340" width="5" height="22" rx="1" fill="#1e3a8a"/>
+    <rect x="96" y="340" width="5" height="26" rx="1" fill="#1e3a8a"/>
+    <rect x="103" y="340" width="5" height="20" rx="1" fill="#1e3a8a"/>
+    <rect x="110" y="340" width="5" height="24" rx="1" fill="#1e3a8a"/>
+  </g>
+
+  <!-- Right scarf end -->
+  <g>
+    <!-- Blue stripe (inner) -->
+    <path d="M388,255 L398,340 L411,340 L400,255 Z" fill="#1e40af"/>
+    <!-- White stripe (middle) -->
+    <path d="M394,255 L404,340 L419,340 L406,255 Z" fill="white"/>
+    <!-- Red stripe (outer) -->
+    <path d="M400,255 L412,340 L424,340 L410,255 Z" fill="#dc2626"/>
+
+    <!-- Fringe -->
+    <rect x="397" y="340" width="5" height="24" rx="1" fill="#1e3a8a"/>
+    <rect x="404" y="340" width="5" height="20" rx="1" fill="#1e3a8a"/>
+    <rect x="411" y="340" width="5" height="26" rx="1" fill="#1e3a8a"/>
+    <rect x="418" y="340" width="5" height="22" rx="1" fill="#1e3a8a"/>
+  </g>
+</svg>

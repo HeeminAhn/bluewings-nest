@@ -38,7 +38,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg overflow-hidden">
             <Image
-              src="/android-chrome-512x512.png"
+              src="/logo.svg"
               alt="블루윙즈 둥지"
               width={56}
               height={56}
