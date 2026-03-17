@@ -53,7 +53,7 @@ export function StandingsTable({ standings, compact = false }: StandingsTablePro
 
   return (
     <div className="toss-card overflow-x-auto">
-      <h3 className="font-semibold text-gray-900 mb-4">K리그1 순위표</h3>
+      <h3 className="font-semibold text-gray-900 mb-4">K리그2 순위표</h3>
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b text-gray-500 whitespace-nowrap">

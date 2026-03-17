@@ -2,16 +2,20 @@ package com.bluewings.member.resource
 
 import com.bluewings.common.response.ApiResponse
 import com.bluewings.member.dto.request.LoginRequest
+import com.bluewings.member.dto.request.RefreshTokenRequest
 import com.bluewings.member.dto.request.SignUpRequest
 import com.bluewings.member.dto.response.LoginResponse
 import com.bluewings.member.dto.response.MemberResponse
+import com.bluewings.member.dto.response.TokenRefreshResponse
 import com.bluewings.member.service.MemberService
 import io.vertx.ext.web.RoutingContext
+import jakarta.annotation.security.RolesAllowed
 import jakarta.validation.Valid
 import jakarta.ws.rs.*
 import jakarta.ws.rs.core.Context
 import jakarta.ws.rs.core.HttpHeaders
 import jakarta.ws.rs.core.MediaType
+import org.eclipse.microprofile.jwt.JsonWebToken
 import org.eclipse.microprofile.openapi.annotations.Operation
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse
@@ -23,7 +27,8 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "인증", description = "회원가입, 로그인 등 인증 관련 API")
 class AuthResource(
-    private val memberService: MemberService
+    private val memberService: MemberService,
+    private val jwt: JsonWebToken
 ) {
 
     @POST
@@ -81,5 +86,31 @@ class AuthResource(
     ): ApiResponse<Map<String, Boolean>> {
         val available = memberService.checkNicknameAvailable(nickname)
         return ApiResponse.success(mapOf("available" to available))
+    }
+
+    @POST
+    @Path("/refresh")
+    @Operation(summary = "토큰 갱신", description = "리프레시 토큰을 사용하여 새로운 액세스 토큰을 발급받습니다")
+    @APIResponses(
+        APIResponse(responseCode = "200", description = "토큰 갱신 성공"),
+        APIResponse(responseCode = "401", description = "유효하지 않은 리프레시 토큰")
+    )
+    fun refreshToken(@Valid request: RefreshTokenRequest): ApiResponse<TokenRefreshResponse> {
+        val response = memberService.refreshToken(request)
+        return ApiResponse.success(response)
+    }
+
+    @POST
+    @Path("/logout")
+    @RolesAllowed("USER", "ADMIN")
+    @Operation(summary = "로그아웃", description = "현재 회원의 리프레시 토큰을 무효화합니다")
+    @APIResponses(
+        APIResponse(responseCode = "200", description = "로그아웃 성공"),
+        APIResponse(responseCode = "401", description = "인증 필요")
+    )
+    fun logout(): ApiResponse<Unit> {
+        val memberId = jwt.getClaim<Long>("memberId")
+        memberService.logout(memberId)
+        return ApiResponse.success(Unit)
     }
 }

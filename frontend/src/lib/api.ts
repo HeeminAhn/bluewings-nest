@@ -27,6 +27,7 @@ import type {
   ReportRequest,
   Category,
   AttendanceResponse,
+  TokenRefreshResponse,
 } from './types';
 
 // 백엔드 URL 생성 (클라이언트 IP 추적을 위해 직접 호출)
@@ -55,9 +56,17 @@ const API_BASE_URL = typeof window !== 'undefined' ? `${getBackendUrl()}/api` : 
 const BACKEND_URL = typeof window !== 'undefined' ? getBackendUrl() : getServerBackendUrl();
 
 class ApiService {
+  private isRefreshing = false;
+  private refreshPromise: Promise<boolean> | null = null;
+
   private getToken(): string | null {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('accessToken');
+  }
+
+  private getRefreshToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('refreshToken');
   }
 
   private getAuthHeader(): HeadersInit {
@@ -65,9 +74,52 @@ class ApiService {
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
 
+  private async tryRefreshToken(): Promise<boolean> {
+    // 이미 갱신 중이면 기존 Promise 반환
+    if (this.isRefreshing && this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      return false;
+    }
+
+    this.isRefreshing = true;
+    this.refreshPromise = this.doRefreshToken(refreshToken);
+
+    try {
+      return await this.refreshPromise;
+    } finally {
+      this.isRefreshing = false;
+      this.refreshPromise = null;
+    }
+  }
+
+  private async doRefreshToken(refreshToken: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      const data = await response.json() as ApiResponse<TokenRefreshResponse>;
+
+      if (data.success && data.data) {
+        localStorage.setItem('accessToken', data.data.accessToken);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    skipAuthRetry = false
   ): Promise<ApiResponse<T>> {
     const url = `${API_BASE_URL}${endpoint}`;
     const headers: HeadersInit = {
@@ -82,8 +134,27 @@ class ApiService {
         headers,
       });
 
-      const data = await response.json();
-      return data as ApiResponse<T>;
+      // HTTP 401 응답 시 토큰 갱신 시도 (Quarkus JWT 만료 응답은 ApiResponse 형식이 아님)
+      if (!skipAuthRetry && response.status === 401) {
+        const refreshed = await this.tryRefreshToken();
+        if (refreshed) {
+          // 토큰 갱신 성공 시 원래 요청 재시도
+          return this.request<T>(endpoint, options, true);
+        }
+        // 토큰 갱신 실패 시 로그아웃 처리
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('auth:logout'));
+        }
+        return {
+          success: false,
+          data: null,
+          error: { code: 'UNAUTHORIZED', message: '인증이 만료되었습니다.' },
+          timestamp: new Date().toISOString(),
+        };
+      }
+
+      const data = await response.json() as ApiResponse<T>;
+      return data;
     } catch (error) {
       return {
         success: false,
@@ -109,6 +180,12 @@ class ApiService {
     return this.request<LoginResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(request),
+    });
+  }
+
+  async logout(): Promise<ApiResponse<void>> {
+    return this.request<void>('/auth/logout', {
+      method: 'POST',
     });
   }
 

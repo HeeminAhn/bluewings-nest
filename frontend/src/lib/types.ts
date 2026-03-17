@@ -57,9 +57,18 @@ export interface MemberResponse {
 // 로그인 응답
 export interface LoginResponse {
   accessToken: string;
+  refreshToken: string;
   tokenType: string;
   expiresIn: number;
+  refreshExpiresIn: number;
   member: MemberResponse;
+}
+
+// 토큰 갱신 응답
+export interface TokenRefreshResponse {
+  accessToken: string;
+  tokenType: string;
+  expiresIn: number;
 }
 
 // 회원가입 요청
