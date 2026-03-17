@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useMatch, useUpdateMatch } from '@/hooks/use-matches'
 import { Button } from '@/components/ui/button'
@@ -41,27 +40,23 @@ export default function EditMatchPage() {
   const { data: match, isLoading } = useMatch(matchId)
   const updateMatch = useUpdateMatch()
 
-  const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<FormData>()
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
+    values: match ? {
+      matchDate: match.matchDate?.split('T')[0] || '',
+      matchTime: match.matchTime || '',
+      homeTeam: match.homeTeam,
+      awayTeam: match.awayTeam,
+      homeScore: match.homeScore ?? null,
+      awayScore: match.awayScore ?? null,
+      stadium: match.stadium,
+      competition: match.competition,
+      season: match.season,
+      matchDay: match.matchDay ?? null,
+      status: match.status,
+    } : undefined,
+  })
   const competition = watch('competition')
   const status = watch('status')
-
-  useEffect(() => {
-    if (match) {
-      reset({
-        matchDate: match.matchDate?.split('T')[0] || '',
-        matchTime: match.matchTime || '',
-        homeTeam: match.homeTeam,
-        awayTeam: match.awayTeam,
-        homeScore: match.homeScore ?? null,
-        awayScore: match.awayScore ?? null,
-        stadium: match.stadium,
-        competition: match.competition,
-        season: match.season,
-        matchDay: match.matchDay ?? null,
-        status: match.status,
-      })
-    }
-  }, [match, reset])
 
   const onSubmit = async (data: FormData) => {
     try {
