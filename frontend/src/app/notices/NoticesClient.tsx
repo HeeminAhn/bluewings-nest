@@ -3,7 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Search, PenSquare, ChevronLeft, ChevronRight, Pin, Eye } from 'lucide-react';
+import { Search, PenSquare, ChevronLeft, ChevronRight, Pin, Eye, Loader2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Header } from '@/components/layout';
 import { GradeBadge } from '@/components/member/GradeBadge';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
@@ -90,97 +95,78 @@ export default function NoticesClient({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3">
-              <img
-                src="/android-chrome-512x512.png"
-                alt="블루윙즈 둥지"
-                className="w-10 h-10 rounded-lg object-cover"
-              />
-              <h1 className="text-lg font-bold text-bluewings">공지사항</h1>
-            </Link>
-            {showAuthUI && (
-              <Link
-                href="/notices/write"
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-bluewings"
-              >
-                <PenSquare className="w-6 h-6" />
-              </Link>
-            )}
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24">
+      <Header title="공지사항" />
 
       <main className="max-w-2xl mx-auto px-4 py-4">
         <form onSubmit={handleSearch} className="mb-4">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input
               type="text"
               placeholder="공지사항 검색..."
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-bluewings/30"
+              className="pl-10 bg-white border-0 shadow-sm"
             />
           </div>
         </form>
 
         {keyword && (
           <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm text-gray-500">"{keyword}" 검색 결과</p>
-            <button onClick={handleClearSearch} className="text-sm text-bluewings">
+            <p className="text-sm text-slate-500">"{keyword}" 검색 결과</p>
+            <Button variant="ghost" size="sm" onClick={handleClearSearch} className="text-blue-700">
               검색 초기화
-            </button>
+            </Button>
           </div>
         )}
 
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <div className="w-8 h-8 border-4 border-bluewings border-t-transparent rounded-full animate-spin" />
+            <Loader2 className="w-8 h-8 animate-spin text-blue-700" />
           </div>
         ) : notices.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            {keyword ? '검색 결과가 없습니다.' : '아직 공지사항이 없습니다.'}
-          </div>
+          <Card className="shadow-sm border-0">
+            <CardContent className="py-12 text-center text-slate-500">
+              {keyword ? '검색 결과가 없습니다.' : '아직 공지사항이 없습니다.'}
+            </CardContent>
+          </Card>
         ) : (
           <div className="space-y-3">
             {notices.map((notice) => (
-              <Link
-                key={notice.id}
-                href={`/notices/${notice.id}`}
-                className="block bg-white rounded-xl p-4 hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-start gap-3">
-                  {notice.isPinned && (
-                    <div className="flex-shrink-0 mt-1">
-                      <Pin className="w-4 h-4 text-red-500 fill-current" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <h3
-                      className={`font-medium text-gray-900 line-clamp-2 ${
-                        notice.isPinned ? 'text-red-600' : ''
-                      }`}
-                    >
-                      {notice.isPinned && <span className="text-red-500 mr-1">[공지]</span>}
-                      {notice.title}
-                    </h3>
-                    <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <span>{notice.author.nickname}</span>
-                        <GradeBadge grade={notice.author.grade} showName={false} size="sm" />
+              <Link key={notice.id} href={`/notices/${notice.id}`}>
+                <Card className={`shadow-sm border-0 hover:shadow-md transition-shadow ${notice.isPinned ? 'border-l-4 border-l-red-500' : ''}`}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      {notice.isPinned && (
+                        <div className="flex-shrink-0 mt-1">
+                          <Pin className="w-4 h-4 text-red-500 fill-current" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          {notice.isPinned && (
+                            <Badge variant="destructive" className="text-xs">공지</Badge>
+                          )}
+                        </div>
+                        <h3 className={`font-medium text-slate-900 line-clamp-2 ${notice.isPinned ? 'text-red-700' : ''}`}>
+                          {notice.title}
+                        </h3>
+                        <div className="flex items-center gap-3 mt-2 text-sm text-slate-500">
+                          <div className="flex items-center gap-1">
+                            <span>{notice.author.nickname}</span>
+                            <GradeBadge grade={notice.author.grade} showName={false} size="sm" />
+                          </div>
+                          <span>{formatDate(notice.createdAt)}</span>
+                          <span className="flex items-center gap-1">
+                            <Eye className="w-3.5 h-3.5" />
+                            {notice.viewCount}
+                          </span>
+                        </div>
                       </div>
-                      <span>{formatDate(notice.createdAt)}</span>
-                      <span className="flex items-center gap-1">
-                        <Eye className="w-4 h-4" />
-                        {notice.viewCount}
-                      </span>
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               </Link>
             ))}
           </div>
@@ -188,23 +174,27 @@ export default function NoticesClient({
 
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 mt-6">
-            <button
+            <Button
+              variant="outline"
+              size="icon"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 0}
-              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-white"
             >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <span className="px-4 py-2 text-sm">
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <span className="px-4 py-2 text-sm text-slate-600">
               {currentPage + 1} / {totalPages}
             </span>
-            <button
+            <Button
+              variant="outline"
+              size="icon"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage >= totalPages - 1}
-              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-white"
             >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+              <ChevronRight className="w-4 h-4" />
+            </Button>
           </div>
         )}
       </main>
@@ -212,7 +202,7 @@ export default function NoticesClient({
       {showAuthUI && (
         <Link
           href="/notices/write"
-          className="fixed bottom-6 right-6 w-14 h-14 bg-bluewings text-white rounded-full shadow-lg flex items-center justify-center hover:bg-bluewings-dark transition-colors"
+          className="fixed bottom-20 right-4 w-14 h-14 bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-800 transition-colors z-40"
         >
           <PenSquare className="w-6 h-6" />
         </Link>

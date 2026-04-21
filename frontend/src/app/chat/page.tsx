@@ -2,7 +2,13 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Send, Users, Loader2 } from 'lucide-react';
+import { Send, Users, Loader2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Header } from '@/components/layout';
 import { GradeBadge } from '@/components/member';
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/lib/api';
@@ -64,12 +70,9 @@ export default function ChatPage() {
     const token = localStorage.getItem('accessToken');
     if (!token) return;
 
-    // 현재 호스트 기반으로 WebSocket URL 생성 (모바일 접속 지원)
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsHost = window.location.hostname;
     const port = window.location.port;
-    // 표준 포트(80, 443)로 접속 시 api 서브도메인 사용 (Cloudflare Tunnel)
-    // 개발 환경에서는 :8080 사용
     const wsUrl = (!port || port === '80' || port === '443')
       ? `${wsProtocol}//api.${wsHost}/ws/chat?token=${token}`
       : `${wsProtocol}//${wsHost}:8080/ws/chat?token=${token}`;
@@ -112,7 +115,6 @@ export default function ChatPage() {
   }, [scrollToBottom]);
 
   useEffect(() => {
-    // hydration 완료 전에는 체크하지 않음
     if (!_hasHydrated) return;
 
     if (!isAuthenticated) {
@@ -176,40 +178,26 @@ export default function ChatPage() {
 
   if (!_hasHydrated || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="w-8 h-8 animate-spin text-bluewings" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-700" />
       </div>
     );
   }
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-gray-50">
-      <header className="bg-white border-b border-gray-200 flex-shrink-0 pt-safe">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.back()}
-              className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-700" />
-            </button>
-            <div>
-              <h1 className="font-semibold text-gray-900">실시간 채팅</h1>
-              <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-gray-400'}`} />
-                <span>{isConnected ? '연결됨' : '연결 중...'}</span>
-                {onlineCount > 0 && (
-                  <>
-                    <span className="mx-1">·</span>
-                    <Users className="w-3 h-3" />
-                    <span>{onlineCount}명 참여중</span>
-                  </>
-                )}
-              </div>
-            </div>
+    <div className="h-[100dvh] flex flex-col bg-gradient-to-b from-slate-50 to-slate-100">
+      <Header
+        title="실시간 채팅"
+        rightAction={
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-400'}`} />
+            <span className="flex items-center gap-1">
+              <Users className="w-4 h-4" />
+              {onlineCount}
+            </span>
           </div>
-        </div>
-      </header>
+        }
+      />
 
       <div
         ref={messagesContainerRef}
@@ -219,15 +207,17 @@ export default function ChatPage() {
         <div className="max-w-lg mx-auto space-y-3">
           {isLoadingMore && (
             <div className="flex justify-center py-2">
-              <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+              <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
             </div>
           )}
 
           {messages.length === 0 ? (
-            <div className="text-center py-20 text-gray-500">
-              <p>아직 메시지가 없습니다.</p>
-              <p className="text-sm mt-1">첫 메시지를 남겨보세요!</p>
-            </div>
+            <Card className="shadow-sm border-0">
+              <CardContent className="py-16 text-center text-slate-500">
+                <p>아직 메시지가 없습니다.</p>
+                <p className="text-sm mt-1">첫 메시지를 남겨보세요!</p>
+              </CardContent>
+            </Card>
           ) : (
             messages.map((msg, idx) => {
               const prevMsg = idx > 0 ? messages[idx - 1] : null;
@@ -238,42 +228,47 @@ export default function ChatPage() {
                 <div key={msg.id}>
                   {showDateDivider && (
                     <div className="flex items-center justify-center my-4">
-                      <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
+                      <Badge variant="secondary" className="bg-slate-200 text-slate-600">
                         {formatDate(msg.createdAt)}
-                      </div>
+                      </Badge>
                     </div>
                   )}
 
                   <div className={`flex gap-2 ${isMyMessage ? 'flex-row-reverse' : ''}`}>
                     {!isMyMessage && (
-                      <div className="flex-shrink-0 w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium text-gray-600">
-                        {msg.nickname.charAt(0)}
-                      </div>
+                      <Avatar className="w-9 h-9">
+                        {msg.profileImageUrl ? (
+                          <AvatarImage src={api.getImageUrl(msg.profileImageUrl)} />
+                        ) : null}
+                        <AvatarFallback className="bg-blue-100 text-blue-700 text-sm">
+                          {msg.nickname.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
                     )}
 
                     <div className={`flex flex-col ${isMyMessage ? 'items-end' : ''} max-w-[75%]`}>
                       {!isMyMessage && (
                         <div className="flex items-center gap-1.5 mb-1 px-1">
-                          <span className="text-xs font-medium text-gray-700">{msg.nickname}</span>
+                          <span className="text-xs font-medium text-slate-700">{msg.nickname}</span>
                           <GradeBadge grade={msg.grade} showName={false} size="sm" />
                         </div>
                       )}
 
                       <div className="flex items-end gap-1.5">
                         {isMyMessage && (
-                          <span className="text-[10px] text-gray-400">{formatTime(msg.createdAt)}</span>
+                          <span className="text-[10px] text-slate-400">{formatTime(msg.createdAt)}</span>
                         )}
                         <div
                           className={`px-3 py-2 rounded-2xl break-words ${
                             isMyMessage
-                              ? 'bg-bluewings text-white rounded-br-md'
-                              : 'bg-white text-gray-900 rounded-bl-md shadow-sm'
+                              ? 'bg-blue-700 text-white rounded-br-md'
+                              : 'bg-white text-slate-900 rounded-bl-md shadow-sm'
                           }`}
                         >
                           <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                         </div>
                         {!isMyMessage && (
-                          <span className="text-[10px] text-gray-400">{formatTime(msg.createdAt)}</span>
+                          <span className="text-[10px] text-slate-400">{formatTime(msg.createdAt)}</span>
                         )}
                       </div>
                     </div>
@@ -287,10 +282,10 @@ export default function ChatPage() {
         </div>
       </div>
 
-      <div className="bg-white border-t border-gray-200 flex-shrink-0 pb-safe">
+      <div className="bg-white border-t border-slate-200 flex-shrink-0 pb-safe">
         <div className="max-w-lg mx-auto px-4 py-3">
           <div className="flex items-center gap-2">
-            <input
+            <Input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
@@ -300,15 +295,16 @@ export default function ChatPage() {
               placeholder={isConnected ? '메시지를 입력하세요...' : '연결 중...'}
               disabled={!isConnected}
               maxLength={1000}
-              className="flex-1 px-4 py-2.5 bg-gray-100 rounded-full text-base focus:outline-none focus:ring-2 focus:ring-bluewings/50 disabled:opacity-50"
+              className="flex-1 rounded-full bg-slate-100 border-0"
             />
-            <button
+            <Button
               onClick={sendMessage}
               disabled={!isConnected || !inputValue.trim()}
-              className="p-2.5 bg-bluewings text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+              size="icon"
+              className="rounded-full bg-blue-700 hover:bg-blue-800"
             >
               <Send className="w-5 h-5" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>
