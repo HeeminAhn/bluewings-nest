@@ -7,7 +7,7 @@ import com.bluewings.community.dto.request.CreateCommentRequest
 import com.bluewings.community.dto.request.UpdateCommentRequest
 import com.bluewings.community.dto.response.CommentResponse
 import com.bluewings.community.dto.response.PagedCommentResponse
-import jakarta.annotation.security.PermitAll
+import io.quarkus.security.Authenticated
 import jakarta.annotation.security.RolesAllowed
 import jakarta.validation.Valid
 import jakarta.ws.rs.*
@@ -36,8 +36,8 @@ class CommentResource(
     }
 
     @GET
-    @PermitAll
-    @Operation(summary = "댓글 목록 조회", description = "게시글의 댓글 목록을 조회합니다")
+    @Authenticated
+    @Operation(summary = "댓글 목록 조회", description = "게시글의 댓글 목록을 조회합니다 (회원 전용)")
     fun getComments(
         @PathParam("postId") postId: Long,
         @Valid @BeanParam pageParams: PageParams
