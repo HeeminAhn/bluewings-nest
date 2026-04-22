@@ -2,9 +2,11 @@ package com.bluewings.admin.resource
 
 import com.bluewings.admin.dto.response.AdminAccessLogResponse
 import com.bluewings.admin.dto.response.PagedResponse
+import com.bluewings.common.pagination.PageParams
 import com.bluewings.common.response.ApiResponse
 import com.bluewings.member.repository.MemberAccessLogRepository
 import jakarta.annotation.security.RolesAllowed
+import jakarta.validation.Valid
 import jakarta.ws.rs.*
 import jakarta.ws.rs.core.MediaType
 import org.eclipse.microprofile.openapi.annotations.Operation
@@ -23,14 +25,16 @@ class AdminAccessLogResource(
     @GET
     @Operation(summary = "전체 접속 이력 조회", description = "전체 접속 이력을 조회합니다")
     fun getAccessLogs(
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int,
+        @Valid @BeanParam pageParams: PageParams,
         @QueryParam("email") email: String?,
         @QueryParam("ipAddress") ipAddress: String?,
         @QueryParam("isSuccess") isSuccess: String?,
         @QueryParam("startDate") startDate: LocalDate?,
         @QueryParam("endDate") endDate: LocalDate?
     ): ApiResponse<PagedResponse<AdminAccessLogResponse>> {
+        val page = pageParams.page
+        val size = pageParams.size
+
         val result = accessLogRepository.findWithFilters(
             email = email,
             ipAddress = ipAddress,
@@ -57,9 +61,10 @@ class AdminAccessLogResource(
     @Operation(summary = "IP별 접속 이력 조회", description = "특정 IP의 접속 이력을 조회합니다")
     fun getAccessLogsByIp(
         @PathParam("ipAddress") ipAddress: String,
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int
+        @Valid @BeanParam pageParams: PageParams
     ): ApiResponse<PagedResponse<AdminAccessLogResponse>> {
+        val page = pageParams.page
+        val size = pageParams.size
         val logs = accessLogRepository.findByIpAddress(ipAddress, page, size)
         val totalCount = accessLogRepository.count("ipAddress", ipAddress)
 

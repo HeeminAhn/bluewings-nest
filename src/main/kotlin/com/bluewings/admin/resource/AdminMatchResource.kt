@@ -7,6 +7,7 @@ import com.bluewings.admin.dto.response.AdminMatchResponse
 import com.bluewings.admin.dto.response.PagedResponse
 import com.bluewings.common.exception.BusinessException
 import com.bluewings.common.exception.ErrorCode
+import com.bluewings.common.pagination.PageParams
 import com.bluewings.common.response.ApiResponse
 import com.bluewings.match.domain.LeagueStanding
 import com.bluewings.match.domain.Match
@@ -39,14 +40,16 @@ AdminMatchResource(
     @GET
     @Operation(summary = "경기 목록 조회", description = "페이지네이션된 경기 목록을 조회합니다")
     fun getMatches(
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int,
+        @Valid @BeanParam pageParams: PageParams,
         @QueryParam("season") season: String?,
         @QueryParam("status") status: String?,
         @QueryParam("competition") competition: String?,
         @QueryParam("startDate") startDate: LocalDate?,
         @QueryParam("endDate") endDate: LocalDate?
     ): ApiResponse<PagedResponse<AdminMatchResponse>> {
+        val page = pageParams.page
+        val size = pageParams.size
+
         val query = StringBuilder()
         val params = mutableListOf<Any>()
         var paramIndex = 1

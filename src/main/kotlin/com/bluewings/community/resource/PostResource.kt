@@ -1,5 +1,6 @@
 package com.bluewings.community.resource
 
+import com.bluewings.common.pagination.PageParams
 import com.bluewings.common.response.ApiResponse
 import com.bluewings.community.cqrs.*
 import com.bluewings.community.dto.request.CreatePostRequest
@@ -73,11 +74,10 @@ class PostResource(
     @PermitAll
     @Operation(summary = "게시글 목록 조회", description = "페이지네이션된 게시글 목록을 조회합니다")
     fun getPosts(
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int,
+        @Valid @BeanParam pageParams: PageParams,
         @QueryParam("categoryId") categoryId: Long?
     ): ApiResponse<PagedPostResponse> {
-        val query = GetPostsPagedQuery(categoryId = categoryId, page = page, size = size)
+        val query = GetPostsPagedQuery(categoryId = categoryId, page = pageParams.page, size = pageParams.size)
         val result = queryHandler.handle(query)
         return ApiResponse.success(result)
     }
@@ -88,10 +88,9 @@ class PostResource(
     @Operation(summary = "게시글 검색", description = "제목으로 게시글을 검색합니다")
     fun searchPosts(
         @QueryParam("keyword") keyword: String,
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int
+        @Valid @BeanParam pageParams: PageParams
     ): ApiResponse<PagedPostResponse> {
-        val query = SearchPostsQuery(keyword = keyword, page = page, size = size)
+        val query = SearchPostsQuery(keyword = keyword, page = pageParams.page, size = pageParams.size)
         val result = queryHandler.handle(query)
         return ApiResponse.success(result)
     }
@@ -143,10 +142,9 @@ class PostResource(
     @Operation(summary = "회원별 게시글 조회", description = "특정 회원이 작성한 게시글 목록을 조회합니다")
     fun getPostsByMember(
         @PathParam("memberId") memberId: Long,
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int
+        @Valid @BeanParam pageParams: PageParams
     ): ApiResponse<PagedPostResponse> {
-        val query = GetPostsByMemberQuery(memberId = memberId, page = page, size = size)
+        val query = GetPostsByMemberQuery(memberId = memberId, page = pageParams.page, size = pageParams.size)
         val result = queryHandler.handle(query)
         return ApiResponse.success(result)
     }

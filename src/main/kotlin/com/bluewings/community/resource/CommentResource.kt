@@ -1,5 +1,6 @@
 package com.bluewings.community.resource
 
+import com.bluewings.common.pagination.PageParams
 import com.bluewings.common.response.ApiResponse
 import com.bluewings.community.cqrs.*
 import com.bluewings.community.dto.request.CreateCommentRequest
@@ -39,10 +40,9 @@ class CommentResource(
     @Operation(summary = "댓글 목록 조회", description = "게시글의 댓글 목록을 조회합니다")
     fun getComments(
         @PathParam("postId") postId: Long,
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int
+        @Valid @BeanParam pageParams: PageParams
     ): ApiResponse<PagedCommentResponse> {
-        val query = GetCommentsByPostQuery(postId = postId, page = page, size = size)
+        val query = GetCommentsByPostQuery(postId = postId, page = pageParams.page, size = pageParams.size)
         val result = queryHandler.handle(query)
         return ApiResponse.success(result)
     }
