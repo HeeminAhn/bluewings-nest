@@ -8,11 +8,13 @@ import io.quarkus.security.Authenticated
 import jakarta.inject.Inject
 import jakarta.ws.rs.*
 import jakarta.ws.rs.core.MediaType
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 
 @Path("/api/chat")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
+@SecurityRequirement(name = "bearerAuth")
 class ChatResource {
 
     @Inject

@@ -14,6 +14,7 @@ import jakarta.ws.rs.*
 import jakarta.ws.rs.core.MediaType
 import org.eclipse.microprofile.jwt.JsonWebToken
 import org.eclipse.microprofile.openapi.annotations.Operation
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.tags.Tag
 
 @Path("/api/posts/{postId}/comments")
@@ -37,6 +38,7 @@ class CommentResource(
 
     @GET
     @Authenticated
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "댓글 목록 조회", description = "게시글의 댓글 목록을 조회합니다 (회원 전용)")
     fun getComments(
         @PathParam("postId") postId: Long,
