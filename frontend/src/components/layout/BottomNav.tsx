@@ -1,16 +1,10 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Calendar, MessageSquare, User } from 'lucide-react';
+import { Home, Calendar, MessageSquare, User, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
-
-const navItems = [
-  { id: 'home', icon: Home, label: '홈', path: '/' },
-  { id: 'schedule', icon: Calendar, label: '경기', path: '/matches' },
-  { id: 'community', icon: MessageSquare, label: '커뮤니티', path: '/posts' },
-  { id: 'mypage', icon: User, label: 'MY', path: '/mypage' },
-];
 
 // BottomNav를 숨길 페이지 경로
 const hiddenPaths = ['/login', '/signup', '/chat'];
@@ -22,16 +16,30 @@ interface BottomNavProps {
 export function BottomNav({ className }: BottomNavProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { isAuthenticated, _hasHydrated } = useAuthStore();
 
   // 특정 페이지에서는 숨김
   const shouldHide = hiddenPaths.some(path => pathname.startsWith(path));
   if (shouldHide) return null;
+
+  // hydration 전에는 MY 유지 (깜빡임 회피). hydration 후 guest면 LogIn으로 스왑
+  const isGuest = _hasHydrated && !isAuthenticated;
+
+  const navItems = [
+    { id: 'home', icon: Home, label: '홈', path: '/' },
+    { id: 'schedule', icon: Calendar, label: '경기', path: '/matches' },
+    { id: 'community', icon: MessageSquare, label: '커뮤니티', path: '/posts' },
+    isGuest
+      ? { id: 'login', icon: LogIn, label: '로그인', path: '/login' }
+      : { id: 'mypage', icon: User, label: 'MY', path: '/mypage' },
+  ];
 
   const getActiveTab = () => {
     if (pathname === '/') return 'home';
     if (pathname.startsWith('/matches')) return 'schedule';
     if (pathname.startsWith('/posts') || pathname.startsWith('/notices')) return 'community';
     if (pathname.startsWith('/mypage')) return 'mypage';
+    if (pathname.startsWith('/login')) return 'login';
     return 'home';
   };
 
