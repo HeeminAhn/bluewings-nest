@@ -4,14 +4,17 @@ import com.bluewings.chat.dto.ChatHistoryResponse
 import com.bluewings.chat.dto.ChatMessageResponse
 import com.bluewings.chat.repository.ChatMessageRepository
 import com.bluewings.common.response.ApiResponse
-import jakarta.annotation.security.PermitAll
+import io.quarkus.security.Authenticated
 import jakarta.inject.Inject
 import jakarta.ws.rs.*
 import jakarta.ws.rs.core.MediaType
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 
 @Path("/api/chat")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@Authenticated
+@SecurityRequirement(name = "bearerAuth")
 class ChatResource {
 
     @Inject
@@ -24,7 +27,6 @@ class ChatResource {
 
     @GET
     @Path("/history")
-    @PermitAll
     fun getHistory(
         @QueryParam("beforeId") beforeId: Long?,
         @QueryParam("limit") @DefaultValue("100") limit: Int

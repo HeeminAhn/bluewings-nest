@@ -6,6 +6,7 @@ import com.bluewings.admin.dto.response.AdminCategoryResponse
 import com.bluewings.admin.dto.response.PagedResponse
 import com.bluewings.common.exception.BusinessException
 import com.bluewings.common.exception.ErrorCode
+import com.bluewings.common.pagination.PageParams
 import com.bluewings.common.response.ApiResponse
 import com.bluewings.community.domain.Category
 import com.bluewings.community.repository.CategoryRepository
@@ -29,11 +30,13 @@ class AdminCategoryResource(
     @GET
     @Operation(summary = "카테고리 목록 조회", description = "페이지네이션된 카테고리 목록을 조회합니다")
     fun getCategories(
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int,
+        @Valid @BeanParam pageParams: PageParams,
         @QueryParam("keyword") keyword: String?,
         @QueryParam("isActive") isActive: Boolean?
     ): ApiResponse<PagedResponse<AdminCategoryResponse>> {
+        val page = pageParams.page
+        val size = pageParams.size
+
         val result = categoryRepository.findWithFilters(
             keyword = keyword,
             isActive = isActive,

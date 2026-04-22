@@ -1,18 +1,20 @@
 package com.bluewings.community.resource
 
+import com.bluewings.common.pagination.PageParams
 import com.bluewings.common.response.ApiResponse
 import com.bluewings.community.cqrs.*
 import com.bluewings.community.dto.request.CreateCommentRequest
 import com.bluewings.community.dto.request.UpdateCommentRequest
 import com.bluewings.community.dto.response.CommentResponse
 import com.bluewings.community.dto.response.PagedCommentResponse
-import jakarta.annotation.security.PermitAll
+import io.quarkus.security.Authenticated
 import jakarta.annotation.security.RolesAllowed
 import jakarta.validation.Valid
 import jakarta.ws.rs.*
 import jakarta.ws.rs.core.MediaType
 import org.eclipse.microprofile.jwt.JsonWebToken
 import org.eclipse.microprofile.openapi.annotations.Operation
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.tags.Tag
 
 @Path("/api/posts/{postId}/comments")
@@ -35,14 +37,14 @@ class CommentResource(
     }
 
     @GET
-    @PermitAll
-    @Operation(summary = "댓글 목록 조회", description = "게시글의 댓글 목록을 조회합니다")
+    @Authenticated
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "댓글 목록 조회", description = "게시글의 댓글 목록을 조회합니다 (회원 전용)")
     fun getComments(
         @PathParam("postId") postId: Long,
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int
+        @Valid @BeanParam pageParams: PageParams
     ): ApiResponse<PagedCommentResponse> {
-        val query = GetCommentsByPostQuery(postId = postId, page = page, size = size)
+        val query = GetCommentsByPostQuery(postId = postId, page = pageParams.page, size = pageParams.size)
         val result = queryHandler.handle(query)
         return ApiResponse.success(result)
     }

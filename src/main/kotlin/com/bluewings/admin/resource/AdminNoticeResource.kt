@@ -6,6 +6,7 @@ import com.bluewings.admin.dto.response.AdminNoticeResponse
 import com.bluewings.admin.dto.response.PagedResponse
 import com.bluewings.common.exception.BusinessException
 import com.bluewings.common.exception.ErrorCode
+import com.bluewings.common.pagination.PageParams
 import com.bluewings.common.response.ApiResponse
 import com.bluewings.member.repository.MemberRepository
 import com.bluewings.notice.domain.Notice
@@ -49,13 +50,15 @@ class AdminNoticeResource(
     @GET
     @Operation(summary = "공지사항 목록 조회", description = "페이지네이션된 공지사항 목록을 조회합니다")
     fun getNotices(
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int,
+        @Valid @BeanParam pageParams: PageParams,
         @QueryParam("keyword") keyword: String?,
         @QueryParam("authorNickname") authorNickname: String?,
         @QueryParam("startDate") startDate: LocalDate?,
         @QueryParam("endDate") endDate: LocalDate?
     ): ApiResponse<PagedResponse<AdminNoticeResponse>> {
+        val page = pageParams.page
+        val size = pageParams.size
+
         val result = noticeRepository.findWithFilters(
             keyword = keyword,
             authorNickname = authorNickname,

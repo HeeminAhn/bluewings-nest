@@ -8,6 +8,7 @@ import com.bluewings.admin.dto.response.PagedResponse
 import com.bluewings.chat.api.ChatApi
 import com.bluewings.common.exception.BusinessException
 import com.bluewings.common.exception.ErrorCode
+import com.bluewings.common.pagination.PageParams
 import com.bluewings.common.response.ApiResponse
 import com.bluewings.member.api.MemberBlockedEvent
 import com.bluewings.member.api.MemberUnblockedEvent
@@ -43,8 +44,7 @@ class AdminMemberResource(
     @GET
     @Operation(summary = "회원 목록 조회", description = "페이지네이션된 회원 목록을 조회합니다")
     fun getMembers(
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int,
+        @Valid @BeanParam pageParams: PageParams,
         @QueryParam("keyword") keyword: String?,
         @QueryParam("role") role: String?,
         @QueryParam("grade") grade: String?,
@@ -53,6 +53,9 @@ class AdminMemberResource(
         @QueryParam("startDate") startDate: LocalDate?,
         @QueryParam("endDate") endDate: LocalDate?
     ): ApiResponse<PagedResponse<AdminMemberResponse>> {
+        val page = pageParams.page
+        val size = pageParams.size
+
         val query = StringBuilder()
         val params = mutableListOf<Any>()
         var paramIndex = 1
@@ -243,9 +246,10 @@ class AdminMemberResource(
     @Operation(summary = "회원 접속 이력 조회", description = "특정 회원의 접속 이력을 조회합니다")
     fun getMemberAccessLogs(
         @PathParam("id") id: Long,
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int
+        @Valid @BeanParam pageParams: PageParams
     ): ApiResponse<PagedResponse<AdminAccessLogResponse>> {
+        val page = pageParams.page
+        val size = pageParams.size
         // 회원 존재 확인
         memberRepository.findById(id)
             ?: throw BusinessException(ErrorCode.MEMBER_NOT_FOUND)
