@@ -1,5 +1,6 @@
 package com.bluewings.notice.resource
 
+import com.bluewings.common.pagination.PageParams
 import com.bluewings.common.response.ApiResponse
 import com.bluewings.notice.cqrs.*
 import com.bluewings.notice.dto.request.CreateNoticeRequest
@@ -39,11 +40,8 @@ class NoticeResource(
     @GET
     @PermitAll
     @Operation(summary = "공지사항 목록 조회", description = "페이지네이션된 공지사항 목록을 조회합니다 (고정 공지 우선)")
-    fun getNotices(
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int
-    ): ApiResponse<PagedNoticeResponse> {
-        val query = GetNoticesPagedQuery(page = page, size = size)
+    fun getNotices(@Valid @BeanParam pageParams: PageParams): ApiResponse<PagedNoticeResponse> {
+        val query = GetNoticesPagedQuery(page = pageParams.page, size = pageParams.size)
         val result = queryHandler.handle(query)
         return ApiResponse.success(result)
     }
@@ -54,10 +52,9 @@ class NoticeResource(
     @Operation(summary = "공지사항 검색", description = "제목으로 공지사항을 검색합니다")
     fun searchNotices(
         @QueryParam("keyword") keyword: String,
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int
+        @Valid @BeanParam pageParams: PageParams
     ): ApiResponse<PagedNoticeResponse> {
-        val query = SearchNoticesQuery(keyword = keyword, page = page, size = size)
+        val query = SearchNoticesQuery(keyword = keyword, page = pageParams.page, size = pageParams.size)
         val result = queryHandler.handle(query)
         return ApiResponse.success(result)
     }

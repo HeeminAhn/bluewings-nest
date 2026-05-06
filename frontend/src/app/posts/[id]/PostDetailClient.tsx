@@ -61,10 +61,10 @@ export default function PostDetailClient({ initialPost, postId }: PostDetailClie
   const showAuthUI = _hasHydrated && isAuthenticated;
 
   useEffect(() => {
-    fetchComments();
-    // 클라이언트에서 조회수 증가 (SSR에서는 증가 안함)
-    api.getPost(postId, false);
-  }, [postId]);
+    if (_hasHydrated && isAuthenticated) {
+      fetchComments();
+    }
+  }, [postId, _hasHydrated, isAuthenticated]);
 
   useEffect(() => {
     if (_hasHydrated && isAuthenticated) {
@@ -363,32 +363,48 @@ export default function PostDetailClient({ initialPost, postId }: PostDetailClie
                 <Heart className={`w-4 h-4 mr-1 ${post.isLiked ? 'fill-current' : ''}`} />
                 {post.likeCount}
               </Button>
-              <div className="flex items-center gap-1 text-slate-500">
-                <MessageCircle className="w-4 h-4" />
-                <span className="text-sm">{post.commentCount}</span>
-              </div>
+              {showAuthUI && (
+                <div className="flex items-center gap-1 text-slate-500">
+                  <MessageCircle className="w-4 h-4" />
+                  <span className="text-sm">{post.commentCount}</span>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
         <Card className="shadow-sm border-0 rounded-none mt-2">
           <CardContent className="p-4">
-            <h2 className="font-semibold mb-4">댓글 {comments.length}</h2>
+            {showAuthUI ? (
+              <>
+                <h2 className="font-semibold mb-4">댓글 {comments.length}</h2>
 
-            <div className="divide-y divide-slate-100">
-              {comments.map((comment) => (
-                <CommentItem
-                  key={comment.id}
-                  comment={comment}
-                  onEdit={handleCommentEdit}
-                  onDelete={handleCommentDelete}
-                  onReply={handleReply}
-                />
-              ))}
-            </div>
+                <div className="divide-y divide-slate-100">
+                  {comments.map((comment) => (
+                    <CommentItem
+                      key={comment.id}
+                      comment={comment}
+                      onEdit={handleCommentEdit}
+                      onDelete={handleCommentDelete}
+                      onReply={handleReply}
+                    />
+                  ))}
+                </div>
 
-            {comments.length === 0 && (
-              <p className="text-center py-8 text-slate-400">아직 댓글이 없습니다.</p>
+                {comments.length === 0 && (
+                  <p className="text-center py-8 text-slate-400">아직 댓글이 없습니다.</p>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <MessageCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                <p className="text-slate-500 text-sm mb-3">
+                  댓글은 회원만 확인할 수 있어요
+                </p>
+                <Link href="/login" className="text-blue-700 font-medium text-sm hover:underline">
+                  로그인하고 대화에 참여하기 →
+                </Link>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -455,13 +471,6 @@ export default function PostDetailClient({ initialPost, postId }: PostDetailClie
           </form>
         )}
 
-        {!showAuthUI && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 text-center z-40">
-            <Link href="/login" className="text-blue-700 font-medium">
-              로그인하고 댓글을 작성하세요
-            </Link>
-          </div>
-        )}
       </main>
 
       {selectedImageIndex !== null && post.images && (

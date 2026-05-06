@@ -4,12 +4,14 @@ import com.bluewings.admin.dto.response.AdminCommentResponse
 import com.bluewings.admin.dto.response.PagedResponse
 import com.bluewings.common.exception.BusinessException
 import com.bluewings.common.exception.ErrorCode
+import com.bluewings.common.pagination.PageParams
 import com.bluewings.common.response.ApiResponse
 import com.bluewings.community.repository.CommentRepository
 import io.quarkus.panache.common.Page
 import io.quarkus.panache.common.Sort
 import jakarta.annotation.security.RolesAllowed
 import jakarta.transaction.Transactional
+import jakarta.validation.Valid
 import jakarta.ws.rs.*
 import jakarta.ws.rs.core.MediaType
 import org.eclipse.microprofile.openapi.annotations.Operation
@@ -27,13 +29,15 @@ class AdminCommentResource(
     @GET
     @Operation(summary = "댓글 목록 조회", description = "페이지네이션된 전체 댓글 목록을 조회합니다")
     fun getComments(
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int,
+        @Valid @BeanParam pageParams: PageParams,
         @QueryParam("keyword") keyword: String?,
         @QueryParam("authorNickname") authorNickname: String?,
         @QueryParam("startDate") startDate: LocalDate?,
         @QueryParam("endDate") endDate: LocalDate?
     ): ApiResponse<PagedResponse<AdminCommentResponse>> {
+        val page = pageParams.page
+        val size = pageParams.size
+
         val result = commentRepository.findWithFilters(
             keyword = keyword,
             authorNickname = authorNickname,

@@ -5,6 +5,7 @@ import com.bluewings.admin.dto.response.AdminReportResponse
 import com.bluewings.admin.dto.response.PagedResponse
 import com.bluewings.common.exception.BusinessException
 import com.bluewings.common.exception.ErrorCode
+import com.bluewings.common.pagination.PageParams
 import com.bluewings.common.response.ApiResponse
 import com.bluewings.member.repository.MemberRepository
 import com.bluewings.report.domain.ReportStatus
@@ -32,12 +33,14 @@ class AdminReportResource(
     @GET
     @Operation(summary = "신고 목록 조회", description = "페이지네이션된 신고 목록을 조회합니다")
     fun getReports(
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int,
+        @Valid @BeanParam pageParams: PageParams,
         @QueryParam("status") status: String?,
         @QueryParam("startDate") startDate: LocalDate?,
         @QueryParam("endDate") endDate: LocalDate?
     ): ApiResponse<PagedResponse<AdminReportResponse>> {
+        val page = pageParams.page
+        val size = pageParams.size
+
         val result = reportRepository.findWithFilters(
             status = if (!status.isNullOrBlank()) ReportStatus.valueOf(status) else null,
             startDate = startDate?.atStartOfDay(),
@@ -107,9 +110,10 @@ class AdminReportResource(
     @Operation(summary = "특정 회원의 신고 내역 조회", description = "특정 회원이 받은 신고 내역을 조회합니다")
     fun getMemberReports(
         @PathParam("memberId") memberId: Long,
-        @QueryParam("page") @DefaultValue("0") page: Int,
-        @QueryParam("size") @DefaultValue("20") size: Int
+        @Valid @BeanParam pageParams: PageParams
     ): ApiResponse<PagedResponse<AdminReportResponse>> {
+        val page = pageParams.page
+        val size = pageParams.size
         val reports = reportRepository.findByReportedMemberId(memberId, page, size)
         val totalCount = reportRepository.countByReportedMemberId(memberId)
 

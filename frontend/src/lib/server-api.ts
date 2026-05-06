@@ -15,7 +15,7 @@ import type {
 } from './types';
 
 // 서버 환경에서 백엔드 URL (Docker: http://backend:8080, 로컬: http://localhost:8080)
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8080';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8180';
 
 interface ApiResponse<T> {
   success: boolean;

@@ -118,7 +118,7 @@ export default function ChatPage() {
     if (!_hasHydrated) return;
 
     if (!isAuthenticated) {
-      router.push('/login');
+      router.replace('/login');
       return;
     }
 

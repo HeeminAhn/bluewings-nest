@@ -62,33 +62,32 @@ export default function HomePage() {
   useEffect(() => {
     if (!_hasHydrated) return;
 
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
-    }
+    // 모두에게 공개되는 데이터
+    const loadPublicData = () => Promise.all([
+      api.getPopularPosts(popularPeriod, 5).then((res) => {
+        if (res.success && res.data) setPopularPosts(res.data);
+      }),
+      api.getNotices(0, 5).then((res) => {
+        if (res.success && res.data) setNotices(res.data.notices);
+      }),
+      api.getUpcomingMatches().then((res) => {
+        if (res.success && res.data && res.data.upcoming && res.data.upcoming.length > 0) {
+          setNextMatch(res.data.upcoming[0]);
+        }
+      }),
+    ]);
 
-    const loadInitialData = async () => {
-      await Promise.all([
-        fetchProfile(),
-        fetchGradeInfo(),
-        api.getPopularPosts(popularPeriod, 5).then((res) => {
-          if (res.success && res.data) setPopularPosts(res.data);
-        }),
-        api.getNotices(0, 5).then((res) => {
-          if (res.success && res.data) setNotices(res.data.notices);
-        }),
-        api.getUpcomingMatches().then((res) => {
-          if (res.success && res.data && res.data.upcoming && res.data.upcoming.length > 0) {
-            setNextMatch(res.data.upcoming[0]);
-          }
-        }),
-      ]);
-    };
-    loadInitialData();
-  }, [_hasHydrated, isAuthenticated, router, fetchProfile, fetchGradeInfo]);
+    loadPublicData();
+
+    // 회원 전용 데이터
+    if (isAuthenticated) {
+      fetchProfile();
+      fetchGradeInfo();
+    }
+  }, [_hasHydrated, isAuthenticated, fetchProfile, fetchGradeInfo]);
 
   useEffect(() => {
-    if (!_hasHydrated || !isAuthenticated) return;
+    if (!_hasHydrated) return;
 
     const fetchPopularPosts = async () => {
       const response = await api.getPopularPosts(popularPeriod, 5);
@@ -132,7 +131,7 @@ export default function HomePage() {
   };
 
   // 스켈레톤 UI
-  if (!_hasHydrated || !member || !member.nickname) {
+  if (!_hasHydrated) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24">
         <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 px-4 pt-4 pb-6">
@@ -155,12 +154,11 @@ export default function HomePage() {
     );
   }
 
-  // 한국시간(KST) 기준 오늘 날짜
-  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
-  const activityStats = member.grade?.activityStats;
+  const today = new Date().toISOString().split('T')[0];
+  const activityStats = member?.grade?.activityStats;
   const alreadyAttended = activityStats?.lastAttendanceDate === today;
-  const totalPoints = member.grade?.currentPoints || 0;
-  const nextGradePoints = member.grade?.nextGrade?.requiredPoints || 100;
+  const totalPoints = member?.grade?.currentPoints || 0;
+  const nextGradePoints = member?.grade?.nextGrade?.requiredPoints || 100;
   const progressPercent = Math.min((totalPoints / nextGradePoints) * 100, 100);
 
   const gradeEmoji: Record<string, string> = {
@@ -182,17 +180,20 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24 md:pb-8">
-      {/* 히어로 헤더 - 청백적 */}
-      <div className="relative bluewings-stripe text-white overflow-hidden">
-        {/* 오버레이 (가독성 향상) */}
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/60 to-blue-800/80" />
+      {/* 히어로 헤더 */}
+      <div className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 text-white overflow-hidden">
+        {/* 배경 패턴 */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full translate-y-1/2 -translate-x-1/2" />
+        </div>
 
         <div className="relative px-4 pt-4 pb-6 max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center overflow-hidden">
                 <Image
-                  src="/logo.svg"
+                  src="/favicon-48x48.png"
                   alt="블루윙즈 둥지"
                   width={40}
                   height={40}
@@ -201,7 +202,7 @@ export default function HomePage() {
               </div>
               <div>
                 <h1 className="font-bold text-xl tracking-tight">블루윙즈 둥지</h1>
-                <p className="text-blue-200 text-sm">모든 푸른 날개가 모이는 곳</p>
+                <p className="text-blue-200 text-sm">모든 날개가 모이는 곳</p>
               </div>
             </div>
             <div className="flex gap-2">
@@ -305,67 +306,87 @@ export default function HomePage() {
       {/* 메인 콘텐츠 */}
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 px-4 -mt-4">
-          {/* 프로필 카드 */}
-          <Card className="shadow-lg border-0 lg:col-span-1">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4 mb-4">
-              <Avatar className="w-14 h-14 border-2 border-blue-100">
-                {member.profileImageUrl ? (
-                  <AvatarImage src={api.getImageUrl(member.profileImageUrl)} />
-                ) : null}
-                <AvatarFallback className="bg-gradient-to-br from-blue-100 to-blue-200 text-2xl">
-                  {gradeEmoji[member.grade?.currentGrade?.name || 'ROOKIE']}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="font-bold text-lg text-slate-800">{member.nickname}</h2>
-                  <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200">
-                    {member.grade?.currentGrade?.displayName || '신입 서포터'}
-                  </Badge>
+          {/* 프로필 카드 — 회원만 */}
+          {isAuthenticated && member && (
+            <Card className="shadow-lg border-0 lg:col-span-1">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4 mb-4">
+                  <Avatar className="w-14 h-14 border-2 border-blue-100">
+                    {member.profileImageUrl ? (
+                      <AvatarImage src={api.getImageUrl(member.profileImageUrl)} />
+                    ) : null}
+                    <AvatarFallback className="bg-gradient-to-br from-blue-100 to-blue-200 text-2xl">
+                      {gradeEmoji[member.grade?.currentGrade?.name || 'ROOKIE']}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h2 className="font-bold text-lg text-slate-800">{member.nickname}</h2>
+                      <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200">
+                        {member.grade?.currentGrade?.displayName || '신입 서포터'}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-slate-500">{totalPoints.toLocaleString()}P</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLogout}
+                    className="text-slate-400"
+                  >
+                    <LogOut size={20} />
+                  </Button>
                 </div>
-                <p className="text-sm text-slate-500">{totalPoints.toLocaleString()}P</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleLogout}
-                className="text-slate-400"
-              >
-                <LogOut size={20} />
-              </Button>
-            </div>
 
-            {/* 등급 프로그레스 */}
-            <div className="bg-slate-50 rounded-xl p-3 mb-4">
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-500">다음 등급까지</span>
-                <span className="font-bold text-blue-700">
-                  {(nextGradePoints - totalPoints).toLocaleString()}P
-                </span>
-              </div>
-              <Progress value={progressPercent} className="h-2" />
-              <div className="flex justify-between text-xs mt-2 text-slate-400">
-                <span>{member.grade?.currentGrade?.name || 'ROOKIE'}</span>
-                <span>{member.grade?.nextGrade?.name || 'SUPPORTER'}</span>
-              </div>
-            </div>
+                {/* 등급 프로그레스 */}
+                <div className="bg-slate-50 rounded-xl p-3 mb-4">
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-slate-500">다음 등급까지</span>
+                    <span className="font-bold text-blue-700">
+                      {(nextGradePoints - totalPoints).toLocaleString()}P
+                    </span>
+                  </div>
+                  <Progress value={progressPercent} className="h-2" />
+                  <div className="flex justify-between text-xs mt-2 text-slate-400">
+                    <span>{member.grade?.currentGrade?.name || 'ROOKIE'}</span>
+                    <span>{member.grade?.nextGrade?.name || 'SUPPORTER'}</span>
+                  </div>
+                </div>
 
-            {/* 출석 체크 버튼 */}
-            <Button
-              onClick={handleAttendance}
-              disabled={isLoading || alreadyAttended}
-              className={`w-full ${
-                alreadyAttended
-                  ? 'bg-slate-100 text-slate-400 hover:bg-slate-100'
-                  : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
-              }`}
-            >
-              <CalendarCheck className="w-5 h-5 mr-2" />
-              {isLoading ? '처리중...' : alreadyAttended ? '오늘 출석 완료!' : '출석 체크 +5P'}
-            </Button>
-          </CardContent>
-        </Card>
+                {/* 출석 체크 버튼 */}
+                <Button
+                  onClick={handleAttendance}
+                  disabled={isLoading || alreadyAttended}
+                  className={`w-full ${
+                    alreadyAttended
+                      ? 'bg-slate-100 text-slate-400 hover:bg-slate-100'
+                      : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
+                  }`}
+                >
+                  <CalendarCheck className="w-5 h-5 mr-2" />
+                  {isLoading ? '처리중...' : alreadyAttended ? '오늘 출석 완료!' : '출석 체크 +5P'}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 비회원 대체 — 로그인/회원가입 CTA 카드 */}
+          {_hasHydrated && !isAuthenticated && (
+            <Card className="shadow-lg border-0 lg:col-span-1">
+              <CardContent className="p-6 text-center">
+                <h2 className="font-bold text-lg text-slate-800 mb-1">환영합니다</h2>
+                <p className="text-sm text-slate-500 mb-4">로그인하고 모든 기능을 이용하세요</p>
+                <div className="flex gap-2">
+                  <Button asChild className="flex-1 bg-blue-700 hover:bg-blue-800">
+                    <Link href="/login">로그인</Link>
+                  </Button>
+                  <Button asChild variant="outline" className="flex-1">
+                    <Link href="/signup">회원가입</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
         {/* 인기글 - PC에서는 우측에 표시 */}
         <Card className="shadow-lg border-0 lg:col-span-2 lg:row-span-2">
