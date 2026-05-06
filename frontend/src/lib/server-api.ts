@@ -163,7 +163,7 @@ export async function getNotice(id: number): Promise<Notice | null> {
 export async function getStandings(season?: string): Promise<StandingsResponse | null> {
   const query = season ? `?season=${season}` : '';
   return serverFetch<StandingsResponse>(`/matches/standings${query}`, {
-    next: { revalidate: 3600 }, // 1시간 캐시
+    cache: 'no-store',
   });
 }
 
@@ -172,6 +172,6 @@ export async function getMatchesByMonth(
   month: number
 ): Promise<MatchListResponse | null> {
   return serverFetch<MatchListResponse>(`/matches?year=${year}&month=${month}`, {
-    next: { revalidate: 3600 },
+    cache: 'no-store',
   });
 }

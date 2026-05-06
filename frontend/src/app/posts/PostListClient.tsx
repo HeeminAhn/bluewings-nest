@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Search, PenSquare, ChevronLeft, ChevronRight, Eye, MessageCircle, Loader2, Heart, ChevronUp } from 'lucide-react';
@@ -43,10 +43,6 @@ export default function PostListClient({
   const [isLoading, setIsLoading] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState(initialKeyword);
 
-  const isFirstRender = useRef(true);
-  const prevParams = useRef({ page: 0, keyword: '', categoryId: undefined as number | undefined, authorId: undefined as number | undefined });
-
-  const page = parseInt(searchParams.get('page') || '0');
   const keyword = searchParams.get('keyword') || '';
   const categoryId = searchParams.get('categoryId')
     ? parseInt(searchParams.get('categoryId')!)
@@ -55,42 +51,12 @@ export default function PostListClient({
     ? parseInt(searchParams.get('authorId')!)
     : undefined;
 
+  // SSR에서 새 데이터를 받으면 state 동기화
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      prevParams.current = { page, keyword, categoryId, authorId };
-      return;
-    }
-
-    if (
-      prevParams.current.page === page &&
-      prevParams.current.keyword === keyword &&
-      prevParams.current.categoryId === categoryId &&
-      prevParams.current.authorId === authorId
-    ) {
-      return;
-    }
-
-    prevParams.current = { page, keyword, categoryId, authorId };
-
-    const fetchPosts = async () => {
-      setIsLoading(true);
-      const response = authorId
-        ? await api.getPostsByMember(authorId, page, 20)
-        : keyword
-          ? await api.searchPosts(keyword, page, 20, categoryId)
-          : await api.getPosts(page, 20, categoryId);
-
-      if (response.success && response.data) {
-        setPosts(response.data.posts);
-        setTotalPages(response.data.totalPages);
-        setCurrentPage(response.data.currentPage);
-      }
-      setIsLoading(false);
-    };
-
-    fetchPosts();
-  }, [page, keyword, categoryId, authorId]);
+    setPosts(initialPosts);
+    setTotalPages(initialTotalPages);
+    setCurrentPage(initialCurrentPage);
+  }, [initialPosts, initialTotalPages, initialCurrentPage]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

@@ -32,7 +32,7 @@ import type {
 
 // 백엔드 URL 생성 (클라이언트 IP 추적을 위해 직접 호출)
 const getBackendUrl = () => {
-  if (typeof window === 'undefined') return 'http://localhost:8080';
+  if (typeof window === 'undefined') return 'http://localhost:8180';
   if (process.env.NEXT_PUBLIC_BACKEND_URL) return process.env.NEXT_PUBLIC_BACKEND_URL;
   // 표준 포트(80, 443)로 접속 시 api 서브도메인 사용 (Cloudflare Tunnel)
   const port = window.location.port;
@@ -44,7 +44,7 @@ const getBackendUrl = () => {
     return `${window.location.protocol}//${window.location.hostname}:8180`;
   }
   // Docker 개발 환경 (포트 3000) → 백엔드 8080 사용
-  return `${window.location.protocol}//${window.location.hostname}:8080`;
+  return `${window.location.protocol}//${window.location.hostname}:8180`;
 };
 
 // 클라이언트에서는 백엔드 직접 호출, 서버에서는 localhost 사용
