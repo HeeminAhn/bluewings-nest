@@ -17,11 +17,13 @@ class CommunityApiImpl(
 ) : CommunityApi {
 
     override fun postExists(postId: Long): Boolean {
-        return postRepository.findById(postId) != null
+        val post = postRepository.findById(postId) ?: return false
+        return !post.isDeleted()
     }
 
     override fun getPostInfo(postId: Long): PostInfo? {
         val post = postRepository.findById(postId) ?: return null
+        if (post.isDeleted()) return null
         return PostInfo(
             id = post.id,
             title = post.title,
@@ -34,11 +36,11 @@ class CommunityApiImpl(
     }
 
     override fun countPostsByMember(memberId: Long): Long {
-        return postRepository.count("author.id = ?1 and isDeleted = false", memberId)
+        return postRepository.count("member.id = ?1 and deletedAt IS NULL", memberId)
     }
 
     override fun countCommentsByMember(memberId: Long): Long {
-        return commentRepository.count("author.id = ?1 and isDeleted = false", memberId)
+        return commentRepository.count("member.id", memberId)
     }
 
     @Transactional

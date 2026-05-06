@@ -19,6 +19,10 @@ class PostQueryHandler(
         val post = postRepository.findById(query.postId)
             ?: throw BusinessException(ErrorCode.POST_NOT_FOUND)
 
+        if (post.isDeleted()) {
+            throw BusinessException(ErrorCode.POST_NOT_FOUND)
+        }
+
         val isLiked = query.viewerId?.let {
             postLikeRepository.existsByPostIdAndMemberId(query.postId, it)
         } ?: false

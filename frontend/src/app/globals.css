@@ -306,6 +306,14 @@ html {
   background-color: #f8fafc;
 }
 
+/* Header와 BottomNav는 페이지 전환 시 애니메이션 제외 */
+::view-transition-old(header),
+::view-transition-new(header),
+::view-transition-old(bottom-nav),
+::view-transition-new(bottom-nav) {
+  animation: none;
+}
+
 /* 스크롤바 스타일 (선택사항) */
 .scrollbar-hide {
   -ms-overflow-style: none;
@@ -314,4 +322,21 @@ html {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* 청백적 줄무늬 패턴 (수원 삼성 블루윙즈) */
+.bluewings-stripe {
+  background:
+    linear-gradient(135deg,
+      #1e3a8a 0%, #1e3a8a 20%,
+      #1e40af 20%, #1e40af 25%,
+      #ffffff 25%, #ffffff 35%,
+      #1e40af 35%, #1e40af 40%,
+      #dc2626 40%, #dc2626 50%,
+      #1e40af 50%, #1e40af 55%,
+      #ffffff 55%, #ffffff 65%,
+      #1e40af 65%, #1e40af 70%,
+      #1e3a8a 70%, #1e3a8a 100%
+    );
+  background-size: 200% 200%;
 }

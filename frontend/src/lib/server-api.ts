@@ -89,9 +89,21 @@ export async function searchPosts(
 }
 
 export async function getPost(id: number): Promise<Post | null> {
-  return serverFetch<Post>(`/posts/${id}`, {
-    next: { revalidate: 30 }, // 30초 캐시 (조회수는 약간 지연됨)
+  // SSR에서는 조회수 증가 안함 (클라이언트에서 증가)
+  return serverFetch<Post>(`/posts/${id}?skipViewCount=true`, {
+    next: { revalidate: 30 },
   });
+}
+
+export async function getPostsByMember(
+  memberId: number,
+  page = 0,
+  size = 20
+): Promise<PagedPostResponse | null> {
+  return serverFetch<PagedPostResponse>(
+    `/posts/member/${memberId}?page=${page}&size=${size}`,
+    { next: { revalidate: 60 } }
+  );
 }
 
 export async function getComments(
@@ -151,7 +163,7 @@ export async function getNotice(id: number): Promise<Notice | null> {
 export async function getStandings(season?: string): Promise<StandingsResponse | null> {
   const query = season ? `?season=${season}` : '';
   return serverFetch<StandingsResponse>(`/matches/standings${query}`, {
-    next: { revalidate: 3600 }, // 1시간 캐시
+    cache: 'no-store',
   });
 }
 
@@ -160,6 +172,6 @@ export async function getMatchesByMonth(
   month: number
 ): Promise<MatchListResponse | null> {
   return serverFetch<MatchListResponse>(`/matches?year=${year}&month=${month}`, {
-    next: { revalidate: 3600 },
+    cache: 'no-store',
   });
 }

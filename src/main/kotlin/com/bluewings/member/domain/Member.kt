@@ -58,7 +58,13 @@ class Member(
     var blockedUntil: Instant? = null,
 
     @Column(name = "report_count", nullable = false)
-    var reportCount: Int = 0
+    var reportCount: Int = 0,
+
+    @Column(name = "refresh_token", length = 2000)
+    var refreshToken: String? = null,
+
+    @Column(name = "refresh_token_expires_at")
+    var refreshTokenExpiresAt: Instant? = null
 ) {
     @OneToOne(mappedBy = "member", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
     var activityStats: MemberActivityStats? = null
@@ -117,5 +123,23 @@ class Member(
 
     fun isBlockExpired(): Boolean {
         return blockedUntil != null && Instant.now().isAfter(blockedUntil)
+    }
+
+    fun updateRefreshToken(token: String, expiresAt: Instant) {
+        this.refreshToken = token
+        this.refreshTokenExpiresAt = expiresAt
+        this.updatedAt = Instant.now()
+    }
+
+    fun clearRefreshToken() {
+        this.refreshToken = null
+        this.refreshTokenExpiresAt = null
+        this.updatedAt = Instant.now()
+    }
+
+    fun isRefreshTokenValid(token: String): Boolean {
+        return this.refreshToken == token &&
+            this.refreshTokenExpiresAt != null &&
+            Instant.now().isBefore(this.refreshTokenExpiresAt)
     }
 }

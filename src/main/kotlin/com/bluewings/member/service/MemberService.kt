@@ -7,6 +7,7 @@ import com.bluewings.member.command.*
 import com.bluewings.member.domain.MemberAccessLog
 import com.bluewings.member.dto.request.LoginRequest
 import com.bluewings.member.dto.request.ProfileUpdateRequest
+import com.bluewings.member.dto.request.RefreshTokenRequest
 import com.bluewings.member.dto.request.SignUpRequest
 import com.bluewings.member.dto.response.*
 import com.bluewings.member.query.*
@@ -38,6 +39,7 @@ class MemberService(
         return queryHandler.handle(GetMemberByIdQuery(memberId))
     }
 
+    @Transactional
     fun login(request: LoginRequest, ipAddress: String? = null, userAgent: String? = null): LoginResponse {
         val member = try {
             queryHandler.handle(
@@ -88,14 +90,61 @@ class MemberService(
             isSuccess = true
         )
 
-        val token = jwtService.generateToken(memberId, member.email, member.nickname, member.role.name)
+        val accessToken = jwtService.generateToken(memberId, member.email, member.nickname, member.role.name)
+        val refreshToken = jwtService.generateRefreshToken(memberId, member.role.name)
+
+        // 리프레시 토큰을 DB에 저장
+        member.updateRefreshToken(refreshToken, jwtService.getRefreshTokenExpiration())
+        memberRepository.persist(member)
+
         val memberResponse = queryHandler.handle(GetMemberByIdQuery(memberId))
 
         return LoginResponse(
-            accessToken = token,
-            expiresIn = 86400,
+            accessToken = accessToken,
+            refreshToken = refreshToken,
+            expiresIn = jwtService.getAccessTokenLifespan(),
+            refreshExpiresIn = jwtService.getRefreshTokenLifespan(),
             member = memberResponse
         )
+    }
+
+    @Transactional
+    fun refreshToken(request: RefreshTokenRequest): TokenRefreshResponse {
+        // JWT에서 memberId 추출
+        val memberId = jwtService.validateRefreshToken(request.refreshToken)
+            ?: throw BusinessException(ErrorCode.INVALID_TOKEN)
+
+        // DB에서 회원 조회 및 리프레시 토큰 유효성 검증
+        val member = memberRepository.findById(memberId)
+            ?: throw BusinessException(ErrorCode.MEMBER_NOT_FOUND)
+
+        if (!member.isRefreshTokenValid(request.refreshToken)) {
+            throw BusinessException(ErrorCode.INVALID_TOKEN)
+        }
+
+        if (member.isBlocked) {
+            throw BusinessException(ErrorCode.MEMBER_BLOCKED)
+        }
+
+        // 새 액세스 토큰 발급
+        val newAccessToken = jwtService.generateToken(
+            memberId = memberId,
+            email = member.email,
+            nickname = member.nickname,
+            role = member.role.name
+        )
+
+        return TokenRefreshResponse(
+            accessToken = newAccessToken,
+            expiresIn = jwtService.getAccessTokenLifespan()
+        )
+    }
+
+    @Transactional
+    fun logout(memberId: Long) {
+        val member = memberRepository.findById(memberId) ?: return
+        member.clearRefreshToken()
+        memberRepository.persist(member)
     }
 
     @Transactional

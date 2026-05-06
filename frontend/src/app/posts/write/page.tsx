@@ -104,7 +104,7 @@ export default function PostWritePage() {
                 <div className="space-y-2">
                   <Label>카테고리</Label>
                   <Select value={categoryId} onValueChange={setCategoryId}>
-                    <SelectTrigger className="bg-white">
+                    <SelectTrigger className="w-full bg-white h-10">
                       <SelectValue placeholder="카테고리를 선택해주세요" />
                     </SelectTrigger>
                     <SelectContent>

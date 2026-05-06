@@ -91,6 +91,10 @@ class PostCommandHandler(
         val post = postRepository.findById(command.postId)
             ?: throw BusinessException(ErrorCode.POST_NOT_FOUND)
 
+        if (post.isDeleted()) {
+            throw BusinessException(ErrorCode.POST_NOT_FOUND)
+        }
+
         if (post.member.id != command.memberId) {
             throw BusinessException(ErrorCode.FORBIDDEN)
         }
@@ -103,11 +107,10 @@ class PostCommandHandler(
         post.update(command.title, command.content)
         post.category = category
 
-        // 기존 이미지 삭제 (파일 시스템 + DB)
+        // 기존 이미지 삭제 (파일 시스템 + orphanRemoval로 DB 자동 삭제)
         post.images.forEach { image ->
             fileUploadService.deleteFile(image.filePath)
         }
-        postImageRepository.deleteByPostId(command.postId)
         post.images.clear()
 
         // 새 이미지 저장
@@ -133,21 +136,16 @@ class PostCommandHandler(
         val post = postRepository.findById(command.postId)
             ?: throw BusinessException(ErrorCode.POST_NOT_FOUND)
 
+        if (post.isDeleted()) {
+            throw BusinessException(ErrorCode.POST_NOT_FOUND)
+        }
+
         if (post.member.id != command.memberId) {
             throw BusinessException(ErrorCode.FORBIDDEN)
         }
 
-        // 이미지 파일 삭제
-        post.images.forEach { image ->
-            fileUploadService.deleteFile(image.filePath)
-        }
-
-        // 관련 이미지, 댓글, 좋아요 삭제
-        postImageRepository.deleteByPostId(command.postId)
-        commentRepository.deleteByPostId(command.postId)
-        postLikeRepository.deleteByPostId(command.postId)
-
-        postRepository.delete(post)
+        // Soft delete 처리
+        post.softDelete()
 
         // 게시글 삭제 이벤트 발행 -> Member 모듈에서 활동 통계 업데이트
         eventBus.publish(PostDeletedEvent(
@@ -160,6 +158,10 @@ class PostCommandHandler(
     fun handle(command: IncrementViewCountCommand) {
         val post = postRepository.findById(command.postId)
             ?: throw BusinessException(ErrorCode.POST_NOT_FOUND)
+
+        if (post.isDeleted()) {
+            throw BusinessException(ErrorCode.POST_NOT_FOUND)
+        }
 
         // 중복 조회 체크
         // - 로그인 사용자: 이전에 조회한 적 있으면 무시 (영구)
@@ -194,6 +196,10 @@ class PostCommandHandler(
     fun handle(command: ToggleLikeCommand): LikeResponse {
         val post = postRepository.findById(command.postId)
             ?: throw BusinessException(ErrorCode.POST_NOT_FOUND)
+
+        if (post.isDeleted()) {
+            throw BusinessException(ErrorCode.POST_NOT_FOUND)
+        }
 
         val member = memberRepository.findById(command.memberId)
             ?: throw BusinessException(ErrorCode.MEMBER_NOT_FOUND)
@@ -239,6 +245,10 @@ class PostCommandHandler(
     fun handle(command: CreateCommentCommand): CommentResponse {
         val post = postRepository.findById(command.postId)
             ?: throw BusinessException(ErrorCode.POST_NOT_FOUND)
+
+        if (post.isDeleted()) {
+            throw BusinessException(ErrorCode.POST_NOT_FOUND)
+        }
 
         val member = memberRepository.findById(command.memberId)
             ?: throw BusinessException(ErrorCode.MEMBER_NOT_FOUND)

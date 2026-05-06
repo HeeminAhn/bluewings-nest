@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Search, PenSquare, ChevronLeft, ChevronRight, Eye, MessageCircle, Loader2, Heart, ChevronUp } from 'lucide-react';
@@ -21,6 +21,7 @@ interface PostListClientProps {
   initialCategories: Category[];
   initialKeyword: string;
   initialCategoryId?: number;
+  initialAuthorId?: number;
 }
 
 export default function PostListClient({
@@ -30,6 +31,7 @@ export default function PostListClient({
   initialCategories,
   initialKeyword,
   initialCategoryId,
+  initialAuthorId,
 }: PostListClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -41,48 +43,20 @@ export default function PostListClient({
   const [isLoading, setIsLoading] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState(initialKeyword);
 
-  const isFirstRender = useRef(true);
-  const prevParams = useRef({ page: 0, keyword: '', categoryId: undefined as number | undefined });
-
-  const page = parseInt(searchParams.get('page') || '0');
   const keyword = searchParams.get('keyword') || '';
   const categoryId = searchParams.get('categoryId')
     ? parseInt(searchParams.get('categoryId')!)
     : undefined;
+  const authorId = searchParams.get('authorId')
+    ? parseInt(searchParams.get('authorId')!)
+    : undefined;
 
+  // SSR에서 새 데이터를 받으면 state 동기화
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      prevParams.current = { page, keyword, categoryId };
-      return;
-    }
-
-    if (
-      prevParams.current.page === page &&
-      prevParams.current.keyword === keyword &&
-      prevParams.current.categoryId === categoryId
-    ) {
-      return;
-    }
-
-    prevParams.current = { page, keyword, categoryId };
-
-    const fetchPosts = async () => {
-      setIsLoading(true);
-      const response = keyword
-        ? await api.searchPosts(keyword, page, 20, categoryId)
-        : await api.getPosts(page, 20, categoryId);
-
-      if (response.success && response.data) {
-        setPosts(response.data.posts);
-        setTotalPages(response.data.totalPages);
-        setCurrentPage(response.data.currentPage);
-      }
-      setIsLoading(false);
-    };
-
-    fetchPosts();
-  }, [page, keyword, categoryId]);
+    setPosts(initialPosts);
+    setTotalPages(initialTotalPages);
+    setCurrentPage(initialCurrentPage);
+  }, [initialPosts, initialTotalPages, initialCurrentPage]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,15 +74,16 @@ export default function PostListClient({
     if (newCategoryId) params.set('categoryId', newCategoryId.toString());
     if (keyword) params.set('keyword', keyword);
     params.set('page', '0');
-    router.push(`/posts?${params.toString()}`);
+    router.replace(`/posts?${params.toString()}`);
   };
 
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams();
     params.set('page', newPage.toString());
+    if (authorId) params.set('authorId', authorId.toString());
     if (keyword) params.set('keyword', keyword);
     if (categoryId) params.set('categoryId', categoryId.toString());
-    router.push(`/posts?${params.toString()}`);
+    router.replace(`/posts?${params.toString()}`);
   };
 
   const handleClearSearch = () => {
@@ -135,63 +110,13 @@ export default function PostListClient({
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24 md:pb-8">
-      <Header title="커뮤니티" />
+      <Header title={authorId ? "내가 쓴 글" : "커뮤니티"} />
 
       <main className="max-w-5xl mx-auto px-4 py-4">
-        {/* PC: 검색과 카테고리를 한 줄에 배치 */}
-        <div className="hidden md:flex items-center justify-between gap-4 mb-4">
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={!categoryId ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => handleCategoryChange(undefined)}
-              className={!categoryId ? 'bg-blue-700 hover:bg-blue-800' : 'bg-white'}
-            >
-              전체
-            </Button>
-            {initialCategories.map((category) => (
-              <Button
-                key={category.id}
-                variant={categoryId === category.id ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleCategoryChange(category.id)}
-                className={categoryId === category.id ? 'bg-blue-700 hover:bg-blue-800' : 'bg-white'}
-              >
-                {category.name}
-              </Button>
-            ))}
-          </div>
-          <form onSubmit={handleSearch} className="w-64">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                type="text"
-                placeholder="게시글 검색..."
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                className="pl-10 bg-white border-0 shadow-sm"
-              />
-            </div>
-          </form>
-        </div>
-
-        {/* 모바일: 기존 레이아웃 */}
-        <div className="md:hidden">
-          <form onSubmit={handleSearch} className="mb-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                type="text"
-                placeholder="게시글 검색..."
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                className="pl-10 bg-white border-0 shadow-sm"
-              />
-            </div>
-          </form>
-
-          {initialCategories.length > 0 && (
-            <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
+        {/* PC: 검색과 카테고리를 한 줄에 배치 (내가 쓴 글 모드에서는 숨김) */}
+        {!authorId && (
+          <div className="hidden md:flex items-center justify-between gap-4 mb-4">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant={!categoryId ? 'default' : 'outline'}
                 size="sm"
@@ -212,8 +137,62 @@ export default function PostListClient({
                 </Button>
               ))}
             </div>
-          )}
-        </div>
+            <form onSubmit={handleSearch} className="w-64">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  type="text"
+                  placeholder="게시글 검색..."
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  className="pl-10 bg-white border-0 shadow-sm"
+                />
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* 모바일: 기존 레이아웃 (내가 쓴 글 모드에서는 숨김) */}
+        {!authorId && (
+          <div className="md:hidden">
+            <form onSubmit={handleSearch} className="mb-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  type="text"
+                  placeholder="게시글 검색..."
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  className="pl-10 bg-white border-0 shadow-sm"
+                />
+              </div>
+            </form>
+
+            {initialCategories.length > 0 && (
+              <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
+                <Button
+                  variant={!categoryId ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleCategoryChange(undefined)}
+                  className={!categoryId ? 'bg-blue-700 hover:bg-blue-800' : 'bg-white'}
+                >
+                  전체
+                </Button>
+                {initialCategories.map((category) => (
+                  <Button
+                    key={category.id}
+                    variant={categoryId === category.id ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handleCategoryChange(category.id)}
+                    className={categoryId === category.id ? 'bg-blue-700 hover:bg-blue-800' : 'bg-white'}
+                  >
+                    {category.name}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {keyword && (
           <div className="mb-4 flex items-center justify-between">
@@ -229,7 +208,7 @@ export default function PostListClient({
             <Loader2 className="w-8 h-8 animate-spin text-blue-700" />
           </div>
         ) : posts.length === 0 ? (
-          <Card className="shadow-sm border-0 max-w-md">
+          <Card className="shadow-sm border-0">
             <CardContent className="py-12 text-center text-slate-500">
               {keyword ? '검색 결과가 없습니다.' : '아직 게시글이 없습니다.'}
             </CardContent>

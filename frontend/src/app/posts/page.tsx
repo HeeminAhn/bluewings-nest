@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { Suspense } from 'react';
-import { getPosts, searchPosts, getCategories } from '@/lib/server-api';
+import { getPosts, searchPosts, getCategories, getPostsByMember } from '@/lib/server-api';
 import PostListClient from './PostListClient';
 
 export const metadata: Metadata = {
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 interface PageProps {
-  searchParams: Promise<{ page?: string; keyword?: string; categoryId?: string }>;
+  searchParams: Promise<{ page?: string; keyword?: string; categoryId?: string; authorId?: string }>;
 }
 
 function PostListSkeleton() {
@@ -49,12 +49,15 @@ async function PostListContent({ searchParams }: PageProps) {
   const page = parseInt(params.page || '0');
   const keyword = params.keyword || '';
   const categoryId = params.categoryId ? parseInt(params.categoryId) : undefined;
+  const authorId = params.authorId ? parseInt(params.authorId) : undefined;
 
   // 서버에서 초기 데이터 fetch (병렬 처리)
   const [postsData, categories] = await Promise.all([
-    keyword
-      ? searchPosts(keyword, page, 20, categoryId)
-      : getPosts(page, 20, categoryId),
+    authorId
+      ? getPostsByMember(authorId, page, 20)
+      : keyword
+        ? searchPosts(keyword, page, 20, categoryId)
+        : getPosts(page, 20, categoryId),
     getCategories(),
   ]);
 
@@ -66,6 +69,7 @@ async function PostListContent({ searchParams }: PageProps) {
       initialCategories={categories || []}
       initialKeyword={keyword}
       initialCategoryId={categoryId}
+      initialAuthorId={authorId}
     />
   );
 }

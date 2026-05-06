@@ -26,7 +26,7 @@ data class MatchResponse(
             val result = if (match.status == MatchStatus.FINISHED && match.homeScore != null && match.awayScore != null) {
                 val suwonScore: Int
                 val opponentScore: Int
-                if (match.homeTeam.contains("수원")) {
+                if (match.homeTeam.contains("수원 삼성") || match.homeTeam.contains("블루윙즈")) {
                     suwonScore = match.homeScore!!
                     opponentScore = match.awayScore!!
                 } else {

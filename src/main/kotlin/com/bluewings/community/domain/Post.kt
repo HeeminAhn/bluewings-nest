@@ -40,6 +40,9 @@ class Post() {
     @Column(name = "updated_at", nullable = false)
     var updatedAt: LocalDateTime = LocalDateTime.now()
 
+    @Column(name = "deleted_at")
+    var deletedAt: LocalDateTime? = null
+
     @OneToMany(mappedBy = "post", cascade = [CascadeType.ALL], orphanRemoval = true)
     @OrderBy("displayOrder ASC")
     var images: MutableList<PostImage> = mutableListOf()
@@ -55,4 +58,10 @@ class Post() {
         this.content = content
         this.updatedAt = LocalDateTime.now()
     }
+
+    fun softDelete() {
+        this.deletedAt = LocalDateTime.now()
+    }
+
+    fun isDeleted(): Boolean = deletedAt != null
 }
