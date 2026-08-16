@@ -25,11 +25,11 @@ class ChatCommandHandler(
             return SendMessageOutcome(SendMessageResult.MEMBER_BLOCKED)
         }
 
-        val content = command.content.trim()
-        if (content.isBlank() || content.length > MAX_CONTENT_LENGTH) {
+        if (command.content.isBlank() || command.content.length > MAX_CONTENT_LENGTH) {
             return SendMessageOutcome(SendMessageResult.INVALID_CONTENT)
         }
 
+        val content = command.content.trim()
         val chatMessage = ChatMessage(member = member, content = content)
         chatMessageRepository.persist(chatMessage)
 
