@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Lexend } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
 import { AppShell } from "@/components/layout";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const lexend = Lexend({
+  variable: "--font-lexend",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -36,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gradient-to-b from-slate-50 to-slate-100`}
+        className={`${lexend.variable} antialiased min-h-screen bg-[#fcf9f8]`}
       >
         <NextTopLoader
           color="#0066B3"

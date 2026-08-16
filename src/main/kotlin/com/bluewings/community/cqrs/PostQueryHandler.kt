@@ -16,7 +16,7 @@ class PostQueryHandler(
     private val postLikeRepository: PostLikeRepository
 ) {
     fun handle(query: GetPostByIdQuery): PostResponse {
-        val post = postRepository.findById(query.postId)
+        val post = postRepository.findByIdWithMember(query.postId)
             ?: throw BusinessException(ErrorCode.POST_NOT_FOUND)
 
         if (post.isDeleted()) {

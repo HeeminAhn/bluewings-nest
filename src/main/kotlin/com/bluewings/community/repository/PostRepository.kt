@@ -15,6 +15,22 @@ class PostRepository : PanacheRepository<Post> {
     @Inject
     lateinit var em: EntityManager
 
+    fun findByIdWithMember(id: Long): Post? {
+        return em.createQuery(
+            """
+            SELECT p FROM Post p
+            LEFT JOIN FETCH p.member
+            LEFT JOIN FETCH p.category
+            LEFT JOIN FETCH p.images
+            WHERE p.id = :id
+            """.trimIndent(),
+            Post::class.java
+        )
+            .setParameter("id", id)
+            .resultList
+            .firstOrNull()
+    }
+
     // N+1 해결: member, category를 함께 로드
     fun findAllPaged(page: Int, size: Int): List<Post> {
         return em.createQuery(

@@ -11,13 +11,13 @@ class Member(
     val id: Long? = null,
 
     @Column(nullable = false, unique = true, length = 100)
-    var email: String,
+    var email: String = "",
 
     @Column(nullable = false)
-    var password: String,
+    var password: String = "",
 
     @Column(nullable = false, unique = true, length = 30)
-    var nickname: String,
+    var nickname: String = "",
 
     @Column(name = "profile_image_url", length = 200)
     var profileImageUrl: String? = null,

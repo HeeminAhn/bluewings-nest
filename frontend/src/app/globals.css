@@ -3,14 +3,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* 블루윙즈 커스텀 테마 */
+/* 블루윙즈 커스텀 테마 - Stitch Design System */
 @theme {
   --color-bluewings-light: #64B5F6;
-  --color-bluewings: #1976D2;
-  --color-bluewings-dark: #0D47A1;
+  --color-bluewings: #004C97;
+  --color-bluewings-dark: #00366e;
   --color-bluewings-gold: #FFD700;
+  --color-bluewings-red: #833502;
+  --color-bluewings-surface: #fcf9f8;
+  --color-bluewings-on-surface: #1c1b1b;
 
-  --font-family-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-family-sans: 'Lexend', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
   --shadow-toss: 0 2px 8px rgba(0, 0, 0, 0.08);
   --shadow-toss-lg: 0 4px 16px rgba(0, 0, 0, 0.12);

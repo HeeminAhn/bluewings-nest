@@ -24,30 +24,16 @@ export function MatchCard({ match, compact = false }: MatchCardProps) {
     return timeStr.substring(0, 5);
   };
 
-  const getResultStyle = () => {
-    if (!match.result) return '';
-    switch (match.result) {
-      case 'WIN':
-        return 'bg-green-50 border-green-200';
-      case 'LOSE':
-        return 'bg-red-50 border-red-200';
-      case 'DRAW':
-        return 'bg-gray-50 border-gray-200';
-      default:
-        return '';
-    }
-  };
-
   const getResultBadge = () => {
     if (!match.result) return null;
     const styles = {
-      WIN: 'bg-green-500 text-white',
-      LOSE: 'bg-red-500 text-white',
-      DRAW: 'bg-gray-500 text-white',
+      WIN: 'bg-[#004C97] text-white',
+      LOSE: 'bg-[#ba1a1a] text-white',
+      DRAW: 'bg-[#424751] text-white',
     };
     const labels = { WIN: '승', LOSE: '패', DRAW: '무' };
     return (
-      <span className={`px-2 py-0.5 rounded text-xs font-bold ${styles[match.result]}`}>
+      <span className={`px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider ${styles[match.result]}`}>
         {labels[match.result]}
       </span>
     );
@@ -55,9 +41,15 @@ export function MatchCard({ match, compact = false }: MatchCardProps) {
 
   if (compact) {
     return (
-      <div className={`p-3 rounded-xl border ${isFinished ? getResultStyle() : 'bg-white'}`}>
+      <div className={`p-3 rounded-lg border ${
+        isFinished
+          ? match.result === 'WIN' ? 'border-[#004C97]/30 bg-[#d6e3ff]/30'
+          : match.result === 'LOSE' ? 'border-[#ba1a1a]/30 bg-red-50'
+          : 'border-[#c2c6d3] bg-[#f0eded]'
+          : 'border-[#c2c6d3] bg-white'
+      }`}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-2 text-sm text-[#737782]">
             <Calendar className="w-4 h-4" />
             <span>{formatDate(match.matchDate)}</span>
             {match.matchTime && (
@@ -70,17 +62,17 @@ export function MatchCard({ match, compact = false }: MatchCardProps) {
           {getResultBadge()}
         </div>
         <div className="mt-2 flex items-center justify-center gap-3">
-          <span className={`font-medium ${match.isHomeGame ? 'text-bluewings' : 'text-gray-700'}`}>
+          <span className={`font-semibold ${match.isHomeGame ? 'text-[#004C97]' : 'text-[#1c1b1b]'}`}>
             {match.homeTeam}
           </span>
           {isFinished ? (
-            <span className="font-bold text-lg">
+            <span className="font-extrabold text-lg text-[#1c1b1b]">
               {match.homeScore} - {match.awayScore}
             </span>
           ) : (
-            <span className="text-gray-400">vs</span>
+            <span className="text-[#737782] font-bold">vs</span>
           )}
-          <span className={`font-medium ${!match.isHomeGame ? 'text-bluewings' : 'text-gray-700'}`}>
+          <span className={`font-semibold ${!match.isHomeGame ? 'text-[#004C97]' : 'text-[#1c1b1b]'}`}>
             {match.awayTeam}
           </span>
         </div>
@@ -89,15 +81,21 @@ export function MatchCard({ match, compact = false }: MatchCardProps) {
   }
 
   return (
-    <div className={`toss-card ${isFinished ? getResultStyle() : ''}`}>
-      <div className="flex items-center justify-between mb-3">
+    <div className={`bg-white rounded-lg border p-5 ${
+      isFinished
+        ? match.result === 'WIN' ? 'border-[#004C97]/30'
+        : match.result === 'LOSE' ? 'border-[#ba1a1a]/30'
+        : 'border-[#c2c6d3]'
+        : 'border-[#c2c6d3]'
+    }`}>
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <span className="text-xs px-2 py-1 bg-bluewings/10 text-bluewings rounded-full font-medium">
+          <span className="text-xs px-2.5 py-1 bg-[#004C97] text-white rounded font-semibold uppercase tracking-wider">
             {match.competition}
           </span>
           {match.matchDay && (
-            <span className="text-xs text-gray-500">
-              {match.matchDay}R
+            <span className="text-xs text-[#737782] font-semibold">
+              R{match.matchDay}
             </span>
           )}
         </div>
@@ -106,45 +104,45 @@ export function MatchCard({ match, compact = false }: MatchCardProps) {
 
       <div className="flex items-center justify-between mb-4">
         <div className="flex-1 text-center">
-          <p className={`font-bold text-lg ${match.isHomeGame ? 'text-bluewings' : 'text-gray-800'}`}>
+          <p className={`font-bold text-lg ${match.isHomeGame ? 'text-[#004C97]' : 'text-[#1c1b1b]'}`}>
             {match.homeTeam}
           </p>
           {match.isHomeGame && (
-            <span className="text-xs text-bluewings">HOME</span>
+            <span className="text-xs text-[#004C97] font-semibold uppercase tracking-wider">HOME</span>
           )}
         </div>
 
         <div className="px-4">
           {isFinished ? (
             <div className="text-center">
-              <p className="text-2xl font-bold">
+              <p className="text-3xl font-extrabold text-[#1c1b1b]">
                 {match.homeScore} - {match.awayScore}
               </p>
-              <p className="text-xs text-gray-500">종료</p>
+              <p className="text-xs text-[#737782] font-semibold uppercase tracking-wider mt-1">Full Time</p>
             </div>
           ) : isScheduled ? (
             <div className="text-center">
-              <p className="text-xl font-medium text-gray-400">VS</p>
-              <p className="text-sm font-medium text-bluewings">
+              <p className="text-2xl font-extrabold text-[#c2c6d3]">VS</p>
+              <p className="text-sm font-bold text-[#004C97]">
                 {formatTime(match.matchTime)}
               </p>
             </div>
           ) : (
-            <p className="text-sm text-gray-500">{match.status}</p>
+            <p className="text-sm text-[#737782] font-semibold uppercase">{match.status}</p>
           )}
         </div>
 
         <div className="flex-1 text-center">
-          <p className={`font-bold text-lg ${!match.isHomeGame ? 'text-bluewings' : 'text-gray-800'}`}>
+          <p className={`font-bold text-lg ${!match.isHomeGame ? 'text-[#004C97]' : 'text-[#1c1b1b]'}`}>
             {match.awayTeam}
           </p>
           {!match.isHomeGame && (
-            <span className="text-xs text-bluewings">AWAY</span>
+            <span className="text-xs text-[#004C97] font-semibold uppercase tracking-wider">AWAY</span>
           )}
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-4 text-sm text-gray-500 pt-3 border-t">
+      <div className="flex items-center justify-center gap-4 text-sm text-[#737782] pt-3 border-t border-[#f0eded]">
         <div className="flex items-center gap-1">
           <Calendar className="w-4 h-4" />
           <span>{formatDate(match.matchDate)}</span>

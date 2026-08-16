@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Trophy, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/layout';
 import { MatchCard, StandingsTable } from '@/components/match';
 import { api } from '@/lib/api';
@@ -83,48 +82,60 @@ export default function MatchesClient({ initialStandings, initialYear }: Matches
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24">
-      <Header title="경기 정보" />
+    <div className="min-h-screen bg-[#fcf9f8] pb-24">
+      <Header title="Match Center" />
 
-      <div className="max-w-2xl mx-auto px-4 py-4">
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Tab)} className="mb-4">
-          <TabsList className="grid w-full grid-cols-2 bg-white">
-            <TabsTrigger value="standings" className="data-[state=active]:bg-blue-700 data-[state=active]:text-white">
-              <Trophy className="w-4 h-4 mr-2" />
-              순위표
-            </TabsTrigger>
-            <TabsTrigger value="schedule" className="data-[state=active]:bg-blue-700 data-[state=active]:text-white">
-              <Calendar className="w-4 h-4 mr-2" />
-              일정/결과
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+      <div className="max-w-[1280px] mx-auto px-6 py-5">
+        {/* 탭 전환 */}
+        <div className="flex gap-1 bg-[#f0eded] rounded-lg p-1 mb-6">
+          <button
+            onClick={() => setActiveTab('standings')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-semibold uppercase tracking-wider transition-all ${
+              activeTab === 'standings'
+                ? 'bg-[#004C97] text-white shadow-sm'
+                : 'text-[#424751] hover:text-[#1c1b1b]'
+            }`}
+          >
+            <Trophy className="w-4 h-4" />
+            순위표
+          </button>
+          <button
+            onClick={() => setActiveTab('schedule')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-semibold uppercase tracking-wider transition-all ${
+              activeTab === 'schedule'
+                ? 'bg-[#004C97] text-white shadow-sm'
+                : 'text-[#424751] hover:text-[#1c1b1b]'
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            Fixtures
+          </button>
+        </div>
 
         {activeTab === 'schedule' && (
           <>
-            <Card className="shadow-sm border-0 mb-4">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between">
-                  <Button variant="ghost" size="icon" onClick={handlePrevMonth}>
-                    <ChevronLeft className="w-5 h-5" />
-                  </Button>
-                  <span className="font-bold text-lg text-slate-900">
-                    {currentYear}년 {monthNames[currentMonth - 1]}
-                  </span>
-                  <Button variant="ghost" size="icon" onClick={handleNextMonth}>
-                    <ChevronRight className="w-5 h-5" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {/* 월 선택 */}
+            <div className="bg-white rounded-lg border border-[#c2c6d3] shadow-sm mb-5">
+              <div className="flex items-center justify-between p-3">
+                <Button variant="ghost" size="icon" onClick={handlePrevMonth} className="text-[#424751]">
+                  <ChevronLeft className="w-5 h-5" />
+                </Button>
+                <span className="font-bold text-lg text-[#1c1b1b]">
+                  {currentYear}년 {monthNames[currentMonth - 1]}
+                </span>
+                <Button variant="ghost" size="icon" onClick={handleNextMonth} className="text-[#424751]">
+                  <ChevronRight className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
 
             {isLoading ? (
               <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-700" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#004C97]" />
               </div>
             ) : matches.length === 0 ? (
-              <Card className="shadow-sm border-0">
-                <CardContent className="py-12 text-center text-slate-500">
+              <Card className="border border-[#c2c6d3] shadow-sm">
+                <CardContent className="py-12 text-center text-[#737782]">
                   이 달에 예정된 경기가 없습니다.
                 </CardContent>
               </Card>
@@ -142,11 +153,11 @@ export default function MatchesClient({ initialStandings, initialYear }: Matches
           <>
             {isLoading ? (
               <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-700" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#004C97]" />
               </div>
             ) : standings.length === 0 ? (
-              <Card className="shadow-sm border-0">
-                <CardContent className="py-12 text-center text-slate-500">
+              <Card className="border border-[#c2c6d3] shadow-sm">
+                <CardContent className="py-12 text-center text-[#737782]">
                   순위 정보가 없습니다.
                 </CardContent>
               </Card>
