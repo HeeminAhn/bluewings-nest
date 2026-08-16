@@ -1,37 +1,36 @@
-package com.bluewings.report.service
+package com.bluewings.report.cqrs
 
 import com.bluewings.common.exception.BusinessException
 import com.bluewings.common.exception.ErrorCode
 import com.bluewings.member.repository.MemberRepository
 import com.bluewings.report.domain.MemberReport
-import com.bluewings.report.dto.CreateReportRequest
 import com.bluewings.report.repository.MemberReportRepository
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.transaction.Transactional
 
 @ApplicationScoped
-class ReportService(
+class ReportCommandHandler(
     private val reportRepository: MemberReportRepository,
     private val memberRepository: MemberRepository
 ) {
 
     @Transactional
-    fun createReport(reporterEmail: String, request: CreateReportRequest): Long {
-        val reporter = memberRepository.findByEmail(reporterEmail)
+    fun handle(command: CreateReportCommand): Long {
+        val reporter = memberRepository.findById(command.reporterId)
             ?: throw BusinessException(ErrorCode.MEMBER_NOT_FOUND)
 
-        val reportedMember = memberRepository.findById(request.reportedMemberId)
+        val reportedMember = memberRepository.findById(command.reportedMemberId)
             ?: throw BusinessException(ErrorCode.MEMBER_NOT_FOUND)
 
         if (reporter.id == reportedMember.id) {
             throw BusinessException(ErrorCode.CANNOT_REPORT_SELF)
         }
 
-        if (request.contentType != null && request.contentId != null) {
+        if (command.contentType != null && command.contentId != null) {
             val alreadyReported = reportRepository.existsByReporterAndContent(
                 reporter.id!!,
-                request.contentType.name,
-                request.contentId
+                command.contentType.name,
+                command.contentId
             )
             if (alreadyReported) {
                 throw BusinessException(ErrorCode.ALREADY_REPORTED)
@@ -41,10 +40,10 @@ class ReportService(
         val report = MemberReport(
             reporter = reporter,
             reportedMember = reportedMember,
-            reason = request.reason,
-            description = request.description,
-            contentType = request.contentType,
-            contentId = request.contentId
+            reason = command.reason,
+            description = command.description,
+            contentType = command.contentType,
+            contentId = command.contentId
         )
 
         reportRepository.persist(report)

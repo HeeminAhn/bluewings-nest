@@ -1,15 +1,14 @@
 package com.bluewings.report.internal
 
-import com.bluewings.member.repository.MemberRepository
 import com.bluewings.report.api.CreateReportRequest
 import com.bluewings.report.api.ReportApi
 import com.bluewings.report.api.ReportContentType
+import com.bluewings.report.cqrs.CreateReportCommand
+import com.bluewings.report.cqrs.ReportCommandHandler
 import com.bluewings.report.domain.ContentType
-import com.bluewings.report.domain.MemberReport
 import com.bluewings.report.domain.ReportReason
 import com.bluewings.report.repository.MemberReportRepository
 import jakarta.enterprise.context.ApplicationScoped
-import jakarta.transaction.Transactional
 
 /**
  * ReportApi 구현체
@@ -17,26 +16,19 @@ import jakarta.transaction.Transactional
 @ApplicationScoped
 class ReportApiImpl(
     private val reportRepository: MemberReportRepository,
-    private val memberRepository: MemberRepository
+    private val commandHandler: ReportCommandHandler
 ) : ReportApi {
 
-    @Transactional
     override fun createReport(request: CreateReportRequest): Long {
-        val reporter = memberRepository.findById(request.reporterId)
-            ?: throw IllegalArgumentException("Reporter not found")
-        val targetMember = memberRepository.findById(request.targetMemberId)
-            ?: throw IllegalArgumentException("Target member not found")
-
-        val report = MemberReport(
-            reporter = reporter,
-            reportedMember = targetMember,
+        val command = CreateReportCommand(
+            reporterId = request.reporterId,
+            reportedMemberId = request.targetMemberId,
             reason = ReportReason.valueOf(request.reason),
             description = request.details,
             contentType = request.contentType.toInternal(),
             contentId = request.contentId
         )
-        reportRepository.persist(report)
-        return report.id!!
+        return commandHandler.handle(command)
     }
 
     override fun countReportsByMember(memberId: Long): Long {
