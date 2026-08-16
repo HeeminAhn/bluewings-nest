@@ -1,7 +1,7 @@
 package com.bluewings.chat.internal
 
 import com.bluewings.chat.api.ChatApi
-import com.bluewings.chat.dto.ChatBroadcastMessage
+import com.bluewings.chat.dto.response.ChatBroadcastMessage
 import com.bluewings.chat.repository.ChatMessageRepository
 import com.bluewings.chat.resource.ChatWebSocket
 import com.fasterxml.jackson.databind.ObjectMapper

@@ -1,10 +1,10 @@
 package com.bluewings.chat.resource
 
-import com.bluewings.chat.domain.ChatMessage
-import com.bluewings.chat.dto.ChatBroadcastMessage
-import com.bluewings.chat.dto.ChatMessageRequest
-import com.bluewings.chat.dto.ChatMessageResponse
-import com.bluewings.chat.repository.ChatMessageRepository
+import com.bluewings.chat.cqrs.ChatCommandHandler
+import com.bluewings.chat.cqrs.SendMessageCommand
+import com.bluewings.chat.cqrs.SendMessageResult
+import com.bluewings.chat.dto.request.ChatMessageRequest
+import com.bluewings.chat.dto.response.ChatBroadcastMessage
 import com.bluewings.member.repository.MemberRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.quarkus.arc.Arc
@@ -24,7 +24,7 @@ class ChatWebSocket {
     lateinit var memberRepository: MemberRepository
 
     @Inject
-    lateinit var chatMessageRepository: ChatMessageRepository
+    lateinit var chatCommandHandler: ChatCommandHandler
 
     @Inject
     lateinit var objectMapper: ObjectMapper
@@ -159,47 +159,25 @@ class ChatWebSocket {
     fun onMessage(connection: WebSocketConnection, message: String) {
         val memberId = connectionMembers[connection.id()] ?: return
 
-        val member = memberRepository.findById(memberId) ?: return
-
-        // 차단된 회원은 메시지 전송 불가 및 강제 퇴장
-        if (member.isBlocked) {
-            connection.close()
-            return
-        }
-
         val request = try {
             objectMapper.readValue(message, ChatMessageRequest::class.java)
         } catch (e: Exception) {
             return
         }
 
-        if (request.content.isBlank() || request.content.length > 1000) {
-            return
+        val outcome = chatCommandHandler.handle(SendMessageCommand(memberId, request.content))
+
+        when (outcome.result) {
+            SendMessageResult.MEMBER_BLOCKED -> connection.close()
+            SendMessageResult.MEMBER_NOT_FOUND, SendMessageResult.INVALID_CONTENT -> return
+            SendMessageResult.SUCCESS -> {
+                val broadcastMessage = ChatBroadcastMessage(
+                    type = "MESSAGE",
+                    message = outcome.response
+                )
+                broadcast(objectMapper.writeValueAsString(broadcastMessage))
+            }
         }
-
-        // 메시지 저장
-        val chatMessage = ChatMessage(
-            member = member,
-            content = request.content.trim()
-        )
-        chatMessageRepository.persist(chatMessage)
-
-        // 메시지 브로드캐스트
-        val response = ChatMessageResponse(
-            id = chatMessage.id!!,
-            memberId = member.id!!,
-            nickname = member.nickname,
-            profileImageUrl = member.profileImageUrl,
-            grade = member.grade.name,
-            content = chatMessage.content,
-            createdAt = chatMessage.createdAt
-        )
-
-        val broadcastMessage = ChatBroadcastMessage(
-            type = "MESSAGE",
-            message = response
-        )
-        broadcast(objectMapper.writeValueAsString(broadcastMessage))
     }
 
     @OnClose
