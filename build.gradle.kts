@@ -54,6 +54,7 @@ dependencies {
 
     testImplementation("io.quarkus:quarkus-junit5")
     testImplementation("io.rest-assured:rest-assured")
+    testImplementation("io.quarkus:quarkus-jdbc-h2")
 }
 
 group = "com.bluewings"
