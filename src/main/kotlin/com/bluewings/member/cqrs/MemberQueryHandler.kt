@@ -1,4 +1,4 @@
-package com.bluewings.member.query
+package com.bluewings.member.cqrs
 
 import com.bluewings.common.exception.InvalidCredentialsException
 import com.bluewings.common.exception.MemberNotFoundException

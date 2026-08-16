@@ -1,4 +1,4 @@
-package com.bluewings.member.command
+package com.bluewings.member.cqrs
 
 import com.bluewings.common.exception.*
 import com.bluewings.common.security.PasswordEncoder

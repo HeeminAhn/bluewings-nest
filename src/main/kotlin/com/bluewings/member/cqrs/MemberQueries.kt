@@ -1,4 +1,4 @@
-package com.bluewings.member.query
+package com.bluewings.member.cqrs
 
 sealed interface MemberQuery
 

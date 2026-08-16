@@ -3,14 +3,13 @@ package com.bluewings.member.service
 import com.bluewings.common.exception.BusinessException
 import com.bluewings.common.exception.ErrorCode
 import com.bluewings.common.security.JwtService
-import com.bluewings.member.command.*
+import com.bluewings.member.cqrs.*
 import com.bluewings.member.domain.MemberAccessLog
 import com.bluewings.member.dto.request.LoginRequest
 import com.bluewings.member.dto.request.ProfileUpdateRequest
 import com.bluewings.member.dto.request.RefreshTokenRequest
 import com.bluewings.member.dto.request.SignUpRequest
 import com.bluewings.member.dto.response.*
-import com.bluewings.member.query.*
 import com.bluewings.member.repository.MemberAccessLogRepository
 import com.bluewings.member.repository.MemberRepository
 import jakarta.enterprise.context.ApplicationScoped
