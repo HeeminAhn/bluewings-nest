@@ -1,4 +1,4 @@
-package com.bluewings.member.command
+package com.bluewings.member.cqrs
 
 sealed interface MemberCommand
 

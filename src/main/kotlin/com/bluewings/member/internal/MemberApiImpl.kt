@@ -3,10 +3,10 @@ package com.bluewings.member.internal
 import com.bluewings.member.api.MemberActivityType
 import com.bluewings.member.api.MemberApi
 import com.bluewings.member.api.MemberInfo
-import com.bluewings.member.command.ActivityType
-import com.bluewings.member.command.DecrementActivityCommand
-import com.bluewings.member.command.IncrementActivityCommand
-import com.bluewings.member.command.MemberCommandHandler
+import com.bluewings.member.cqrs.ActivityType
+import com.bluewings.member.cqrs.DecrementActivityCommand
+import com.bluewings.member.cqrs.IncrementActivityCommand
+import com.bluewings.member.cqrs.MemberCommandHandler
 import com.bluewings.member.repository.MemberRepository
 import jakarta.enterprise.context.ApplicationScoped
 
