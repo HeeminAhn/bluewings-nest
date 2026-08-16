@@ -16,6 +16,7 @@
 - 각 Handler는 생성자 주입(`class XxxHandler(private val repo: XxxRepository)`)을 쓴다 — `@Inject lateinit var` 필드 주입은 새 코드에 쓰지 않는다.
 - 각 태스크 완료 후 `./gradlew compileKotlin compileTestKotlin`으로 컴파일 확인, 이어서 해당 태스크의 테스트를 `./gradlew test --tests "..."`로 실행한다.
 - DB는 테스트 시 H2 in-memory(`drop-and-create`)를 쓰므로, 테스트는 자체적으로 필요한 fixture(Member 등)를 직접 persist해서 사용한다. 다른 테스트의 데이터와 충돌하지 않도록 이메일/닉네임 등 unique 값은 각 테스트 메서드마다 다른 값을 쓴다.
+- **DB를 건드리는 테스트 메서드에는 반드시 `@TestTransaction`(`io.quarkus.test.TestTransaction`)을 붙인다. `jakarta.transaction.Transactional`을 테스트 메서드에 쓰지 않는다.** 이유: 핸들러들이 `@Transactional`이고 `BusinessException`은 `RuntimeException`이라, `@Transactional` 테스트 안에서 `assertThrows`로 예외를 잡으면 JTA 트랜잭션이 rollback-only로 마킹된 뒤 테스트 종료 시 커밋이 시도되어 `RollbackException`으로 엉뚱하게 실패한다. `@TestTransaction`은 항상 롤백하므로 이 문제가 없고, 테스트 간 데이터 누수도 막아준다.
 
 ---
 
@@ -109,6 +110,7 @@ Expected: BUILD SUCCESSFUL (import 오류 없음)
 ```kotlin
 package com.bluewings.member.cqrs
 
+import io.quarkus.test.TestTransaction
 import io.quarkus.test.junit.QuarkusTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -125,6 +127,7 @@ class MemberCqrsHandlerTest {
     lateinit var queryHandler: MemberQueryHandler
 
     @Test
+    @TestTransaction
     fun `signUp 커맨드로 가입하면 QueryHandler로 동일한 회원을 조회할 수 있다`() {
         val memberId = commandHandler.handle(
             SignUpCommand(
@@ -338,9 +341,9 @@ package com.bluewings.match.cqrs
 import com.bluewings.match.domain.Match
 import com.bluewings.match.domain.MatchStatus
 import com.bluewings.match.repository.MatchRepository
+import io.quarkus.test.TestTransaction
 import io.quarkus.test.junit.QuarkusTest
 import jakarta.inject.Inject
-import jakarta.transaction.Transactional
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -357,7 +360,7 @@ class MatchQueryHandlerTest {
     lateinit var matchRepository: MatchRepository
 
     @Test
-    @Transactional
+    @TestTransaction
     fun `시즌으로 경기 목록을 조회하면 해당 시즌 경기만 반환한다`() {
         val match = Match().apply {
             matchDate = LocalDate.of(2026, 3, 1)
@@ -375,13 +378,13 @@ class MatchQueryHandlerTest {
     }
 
     @Test
-    @Transactional
+    @TestTransaction
     fun `존재하지 않는 경기 ID를 조회하면 null을 반환한다`() {
         assertNull(queryHandler.handle(GetMatchByIdQuery(999_999L)))
     }
 
     @Test
-    @Transactional
+    @TestTransaction
     fun `경기를 ID로 조회하면 상세 정보를 반환한다`() {
         val match = Match().apply {
             matchDate = LocalDate.of(2026, 4, 1)
@@ -651,9 +654,9 @@ import com.bluewings.common.exception.BusinessException
 import com.bluewings.member.domain.Member
 import com.bluewings.member.repository.MemberRepository
 import com.bluewings.report.domain.ReportReason
+import io.quarkus.test.TestTransaction
 import io.quarkus.test.junit.QuarkusTest
 import jakarta.inject.Inject
-import jakarta.transaction.Transactional
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -669,7 +672,7 @@ class ReportCommandHandlerTest {
     lateinit var memberRepository: MemberRepository
 
     @Test
-    @Transactional
+    @TestTransaction
     fun `정상적인 신고는 신고 ID를 반환한다`() {
         val reporter = Member(email = "report-reporter@bluewings.com", password = "x", nickname = "신고자")
         val reported = Member(email = "report-reported@bluewings.com", password = "x", nickname = "피신고자")
@@ -691,7 +694,7 @@ class ReportCommandHandlerTest {
     }
 
     @Test
-    @Transactional
+    @TestTransaction
     fun `자기 자신을 신고하면 예외가 발생한다`() {
         val member = Member(email = "report-self@bluewings.com", password = "x", nickname = "본인")
         memberRepository.persist(member)
@@ -1039,9 +1042,9 @@ package com.bluewings.chat.cqrs
 
 import com.bluewings.member.domain.Member
 import com.bluewings.member.repository.MemberRepository
+import io.quarkus.test.TestTransaction
 import io.quarkus.test.junit.QuarkusTest
 import jakarta.inject.Inject
-import jakarta.transaction.Transactional
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -1059,7 +1062,7 @@ class ChatCqrsHandlerTest {
     lateinit var memberRepository: MemberRepository
 
     @Test
-    @Transactional
+    @TestTransaction
     fun `정상 메시지를 보내면 SUCCESS와 함께 응답을 반환하고 히스토리에서 조회된다`() {
         val member = Member(email = "chat-sender@bluewings.com", password = "x", nickname = "채팅유저")
         memberRepository.persist(member)
@@ -1074,7 +1077,7 @@ class ChatCqrsHandlerTest {
     }
 
     @Test
-    @Transactional
+    @TestTransaction
     fun `차단된 회원이 메시지를 보내면 MEMBER_BLOCKED를 반환한다`() {
         val member = Member(
             email = "chat-blocked@bluewings.com",
@@ -1090,7 +1093,7 @@ class ChatCqrsHandlerTest {
     }
 
     @Test
-    @Transactional
+    @TestTransaction
     fun `빈 내용이면 INVALID_CONTENT를 반환한다`() {
         val member = Member(email = "chat-empty@bluewings.com", password = "x", nickname = "빈메시지유저")
         memberRepository.persist(member)
